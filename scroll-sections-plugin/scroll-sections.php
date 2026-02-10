@@ -50,6 +50,23 @@ function ss_register_post_type() {
 add_action( 'init', 'ss_register_post_type' );
 
 /**
+ * On activation, flush rewrite rules so the post type is recognized.
+ */
+function ss_activate() {
+    ss_register_post_type();
+    flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'ss_activate' );
+
+/**
+ * On deactivation, clean up rewrite rules.
+ */
+function ss_deactivate() {
+    flush_rewrite_rules();
+}
+register_deactivation_hook( __FILE__, 'ss_deactivate' );
+
+/**
  * Add meta boxes for section settings.
  */
 function ss_add_meta_boxes() {
@@ -188,13 +205,24 @@ function ss_save_meta( $post_id ) {
 add_action( 'save_post_scroll_section', 'ss_save_meta' );
 
 /**
- * Enqueue frontend assets.
+ * Ensure _ss_order meta exists on every scroll section (default 0).
+ * This runs on any save/publish so the query always finds sections.
  */
-function ss_enqueue_assets() {
-    if ( ! ss_should_load_assets() ) {
+function ss_ensure_order_meta( $post_id ) {
+    if ( get_post_type( $post_id ) !== 'scroll_section' ) {
         return;
     }
+    if ( get_post_meta( $post_id, '_ss_order', true ) === '' ) {
+        update_post_meta( $post_id, '_ss_order', '0' );
+    }
+}
+add_action( 'save_post', 'ss_ensure_order_meta' );
 
+/**
+ * Enqueue frontend assets on all frontend pages.
+ * The CSS/JS are lightweight and the JS exits early if #ss-container is absent.
+ */
+function ss_enqueue_assets() {
     wp_enqueue_style(
         'scroll-sections',
         SCROLL_SECTIONS_URL . 'assets/css/scroll-sections.css',
@@ -213,23 +241,6 @@ function ss_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', 'ss_enqueue_assets' );
 
 /**
- * Determine if assets should load on the current page.
- */
-function ss_should_load_assets() {
-    global $post;
-
-    if ( is_page_template( 'templates/scroll-sections-template.php' ) ) {
-        return true;
-    }
-
-    if ( $post && has_shortcode( $post->post_content, 'scroll_sections' ) ) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
  * Query all published scroll sections ordered by the display order meta.
  */
 function ss_get_sections() {
@@ -237,9 +248,21 @@ function ss_get_sections() {
         'post_type'      => 'scroll_section',
         'posts_per_page' => -1,
         'post_status'    => 'publish',
-        'meta_key'       => '_ss_order',
-        'orderby'        => 'meta_value_num',
-        'order'          => 'ASC',
+        'orderby'        => array(
+            'meta_value_num' => 'ASC',
+            'date'           => 'ASC',
+        ),
+        'meta_query'     => array(
+            'relation' => 'OR',
+            array(
+                'key'     => '_ss_order',
+                'compare' => 'EXISTS',
+            ),
+            array(
+                'key'     => '_ss_order',
+                'compare' => 'NOT EXISTS',
+            ),
+        ),
     );
 
     return new WP_Query( $args );
