@@ -111,12 +111,18 @@
     width: 100%;
 }
 
-/* Stack layout (default): each video full width */
-.ss-layout-stack .ss-video-item {
-    margin: 0 auto 1.5rem;
+/* All grid/featured layouts: force items to fill their cell */
+.ss-video-grid .ss-video-item {
+    max-width: 100% !important;
+    width: 100%;
 }
-.ss-layout-stack .ss-video-item:last-child {
-    margin-bottom: 0;
+
+/* Stack layout (default): single column, centered */
+.ss-layout-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
 }
 
 /* 2-column grid */
@@ -125,9 +131,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 }
-.ss-layout-grid-2 .ss-video-item {
-    max-width: 100% !important;
-}
 
 /* 3-column grid */
 .ss-layout-grid-3 {
@@ -135,43 +138,8 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1.5rem;
 }
-.ss-layout-grid-3 .ss-video-item {
-    max-width: 100% !important;
-}
 
-/* Featured layout: first video large, rest in a row below */
-.ss-layout-featured {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-.ss-layout-featured .ss-video-item:first-child {
-    max-width: 100% !important;
-}
-.ss-layout-featured .ss-video-item:not(:first-child) {
-    max-width: 100% !important;
-}
-/* When 2+ small videos, flow them in a row */
-.ss-layout-featured {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-.ss-layout-featured .ss-video-item:first-child {
-    grid-column: 1 / -1;
-}
-
-/* Auto-create columns for smaller videos after the first */
-@supports (grid-template-columns: subgrid) {
-    .ss-layout-featured {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-    .ss-layout-featured .ss-video-item:first-child {
-        grid-column: 1 / -1;
-    }
-}
-
-/* Fallback: wrap smaller videos */
+/* Featured layout: first video full width, rest in a flexible row */
 .ss-layout-featured {
     display: flex;
     flex-wrap: wrap;
@@ -182,7 +150,6 @@
 }
 .ss-layout-featured .ss-video-item:not(:first-child) {
     flex: 1 1 280px;
-    max-width: 100% !important;
 }
 
 /* Video item */
@@ -217,6 +184,7 @@
     font-size: 0.85rem;
     opacity: 0.7;
     text-align: center;
+    color: #fff;
 }
 
 /* Responsive: collapse grids to single column on mobile */
