@@ -104,17 +104,95 @@
 .ss-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 .ss-body a:hover { opacity: 0.7; }
 
-/* ---------- Inline Video ---------- */
+/* ---------- Video Grid ---------- */
 
-.ss-inline-video {
+.ss-video-grid {
     margin: 2rem auto 0;
+    width: 100%;
+}
+
+/* Stack layout (default): each video full width */
+.ss-layout-stack .ss-video-item {
+    margin: 0 auto 1.5rem;
+}
+.ss-layout-stack .ss-video-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 2-column grid */
+.ss-layout-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+.ss-layout-grid-2 .ss-video-item {
+    max-width: 100% !important;
+}
+
+/* 3-column grid */
+.ss-layout-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+}
+.ss-layout-grid-3 .ss-video-item {
+    max-width: 100% !important;
+}
+
+/* Featured layout: first video large, rest in a row below */
+.ss-layout-featured {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.ss-layout-featured .ss-video-item:first-child {
+    max-width: 100% !important;
+}
+.ss-layout-featured .ss-video-item:not(:first-child) {
+    max-width: 100% !important;
+}
+/* When 2+ small videos, flow them in a row */
+.ss-layout-featured {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.ss-layout-featured .ss-video-item:first-child {
+    grid-column: 1 / -1;
+}
+
+/* Auto-create columns for smaller videos after the first */
+@supports (grid-template-columns: subgrid) {
+    .ss-layout-featured {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .ss-layout-featured .ss-video-item:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Fallback: wrap smaller videos */
+.ss-layout-featured {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+.ss-layout-featured .ss-video-item:first-child {
+    flex: 0 0 100%;
+}
+.ss-layout-featured .ss-video-item:not(:first-child) {
+    flex: 1 1 280px;
+    max-width: 100% !important;
+}
+
+/* Video item */
+.ss-video-item {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
 
-.ss-inline-video video,
-.ss-video-embed iframe {
+.ss-video-item video {
     display: block;
     width: 100%;
     border: 0;
@@ -131,6 +209,25 @@
     inset: 0;
     width: 100%;
     height: 100%;
+    border: 0;
+}
+
+.ss-video-label {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* Responsive: collapse grids to single column on mobile */
+@media (max-width: 768px) {
+    .ss-layout-grid-2,
+    .ss-layout-grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .ss-layout-featured .ss-video-item:not(:first-child) {
+        flex: 0 0 100%;
+    }
 }
 
 /* ---------- Stagger Animations ---------- */

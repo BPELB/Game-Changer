@@ -86,12 +86,23 @@ function ss_render_meta_box( $post ) {
         'content_width'   => get_post_meta( $post->ID, '_ss_content_width', true ) ?: '900',
         'content_position'=> get_post_meta( $post->ID, '_ss_content_position', true ) ?: 'center',
         'parallax_speed'  => get_post_meta( $post->ID, '_ss_parallax_speed', true ) ?: '0.3',
-        'inline_video'    => get_post_meta( $post->ID, '_ss_inline_video', true ),
-        'video_width'     => get_post_meta( $post->ID, '_ss_video_width', true ) ?: '800',
         'video_autoplay'  => get_post_meta( $post->ID, '_ss_video_autoplay', true ) ?: 'on_scroll',
+        'video_layout'    => get_post_meta( $post->ID, '_ss_video_layout', true ) ?: 'stack',
         'section_height'  => get_post_meta( $post->ID, '_ss_section_height', true ) ?: '100',
         'title_visible'   => get_post_meta( $post->ID, '_ss_title_visible', true ) ?: 'yes',
     );
+
+    // Videos stored as JSON array — migrate old single-video field
+    $videos_raw = get_post_meta( $post->ID, '_ss_videos', true );
+    $videos = $videos_raw ? json_decode( $videos_raw, true ) : array();
+    if ( ! is_array( $videos ) ) $videos = array();
+
+    // Migrate legacy single inline_video field
+    $legacy = get_post_meta( $post->ID, '_ss_inline_video', true );
+    if ( $legacy && empty( $videos ) ) {
+        $legacy_width = get_post_meta( $post->ID, '_ss_video_width', true ) ?: '800';
+        $videos = array( array( 'url' => $legacy, 'label' => '', 'width' => $legacy_width ) );
+    }
     ?>
     <style>
         .ss-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
@@ -178,25 +189,59 @@ function ss_render_meta_box( $post ) {
         </div>
     </div>
 
-    <!-- Inline Video -->
+    <!-- Videos -->
     <div class="ss-meta-section">
-        <h4>Inline Video (appears within the section content)</h4>
-        <div class="ss-meta-grid">
-            <p class="ss-full">
-                <label for="ss_inline_video">Video Embed URL</label>
-                <input type="url" id="ss_inline_video" name="ss_inline_video" value="<?php echo esc_url( $m['inline_video'] ); ?>" placeholder="https://www.youtube.com/watch?v=xxxxx">
-                <small>Paste any YouTube or Vimeo URL (watch, share, or embed) — it will be auto-converted. Or paste an MP4 link. Leave blank for no video.</small>
-            </p>
-            <p>
-                <label for="ss_video_width">Video Max Width (px)</label>
-                <input type="number" id="ss_video_width" name="ss_video_width" value="<?php echo esc_attr( $m['video_width'] ); ?>" min="300" max="1400" step="50">
-            </p>
+        <h4>Videos (appear within the section content)</h4>
+        <style>
+            .ss-video-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 10px; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
+            .ss-video-row .ss-vr-url { flex: 1; }
+            .ss-video-row .ss-vr-label { width: 140px; }
+            .ss-video-row .ss-vr-width { width: 90px; }
+            .ss-video-row input { width: 100%; }
+            .ss-video-row label { font-weight: 600; display: block; margin-bottom: 4px; font-size: 12px; }
+            .ss-remove-video { background: #dc3545; color: #fff; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+            .ss-remove-video:hover { background: #c82333; }
+            #ss-add-video { margin-top: 8px; }
+        </style>
+        <div id="ss-videos-list">
+            <?php foreach ( $videos as $vi => $v ) : ?>
+            <div class="ss-video-row">
+                <div class="ss-vr-url">
+                    <label>Video URL</label>
+                    <input type="url" name="ss_videos[<?php echo $vi; ?>][url]" value="<?php echo esc_url( $v['url'] ); ?>" placeholder="https://www.youtube.com/watch?v=xxxxx">
+                </div>
+                <div class="ss-vr-label">
+                    <label>Label (optional)</label>
+                    <input type="text" name="ss_videos[<?php echo $vi; ?>][label]" value="<?php echo esc_attr( $v['label'] ?? '' ); ?>" placeholder="Video title">
+                </div>
+                <div class="ss-vr-width">
+                    <label>Width (px)</label>
+                    <input type="number" name="ss_videos[<?php echo $vi; ?>][width]" value="<?php echo esc_attr( $v['width'] ?? '800' ); ?>" min="200" max="1400" step="50">
+                </div>
+                <button type="button" class="ss-remove-video">Remove</button>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" class="button" id="ss-add-video">+ Add Video</button>
+        <p style="margin-top:10px;">
+            <small>Paste any YouTube, Vimeo, or MP4 URL. Multiple videos display in a grid within the section.</small>
+        </p>
+        <div class="ss-meta-grid" style="margin-top: 12px;">
             <p>
                 <label for="ss_video_autoplay">Video Behavior</label>
                 <select id="ss_video_autoplay" name="ss_video_autoplay">
                     <option value="on_scroll" <?php selected( $m['video_autoplay'], 'on_scroll' ); ?>>Play when scrolled into view</option>
                     <option value="click" <?php selected( $m['video_autoplay'], 'click' ); ?>>Click to play</option>
                     <option value="autoplay" <?php selected( $m['video_autoplay'], 'autoplay' ); ?>>Always autoplay (muted)</option>
+                </select>
+            </p>
+            <p>
+                <label for="ss_video_layout">Video Layout</label>
+                <select id="ss_video_layout" name="ss_video_layout">
+                    <option value="stack" <?php selected( $m['video_layout'], 'stack' ); ?>>Stacked (one per row)</option>
+                    <option value="grid-2" <?php selected( $m['video_layout'], 'grid-2' ); ?>>Grid — 2 columns</option>
+                    <option value="grid-3" <?php selected( $m['video_layout'], 'grid-3' ); ?>>Grid — 3 columns</option>
+                    <option value="featured" <?php selected( $m['video_layout'], 'featured' ); ?>>Featured (1 large + small below)</option>
                 </select>
             </p>
         </div>
@@ -267,6 +312,22 @@ function ss_render_meta_box( $post ) {
         $('#ss_bg_type').on('change', function(){
             $('.ss-toggle-bg-video').toggle($(this).val() === 'video');
         });
+
+        // Repeatable videos
+        var videoIdx = <?php echo max( count( $videos ), 0 ); ?>;
+        $('#ss-add-video').on('click', function(){
+            var row = '<div class="ss-video-row">' +
+                '<div class="ss-vr-url"><label>Video URL</label><input type="url" name="ss_videos[' + videoIdx + '][url]" placeholder="https://www.youtube.com/watch?v=xxxxx"></div>' +
+                '<div class="ss-vr-label"><label>Label (optional)</label><input type="text" name="ss_videos[' + videoIdx + '][label]" placeholder="Video title"></div>' +
+                '<div class="ss-vr-width"><label>Width (px)</label><input type="number" name="ss_videos[' + videoIdx + '][width]" value="800" min="200" max="1400" step="50"></div>' +
+                '<button type="button" class="ss-remove-video">Remove</button>' +
+                '</div>';
+            $('#ss-videos-list').append(row);
+            videoIdx++;
+        });
+        $('#ss-videos-list').on('click', '.ss-remove-video', function(){
+            $(this).closest('.ss-video-row').remove();
+        });
     });
     </script>
     <?php
@@ -298,9 +359,8 @@ function ss_save_meta( $post_id ) {
         'ss_content_width'    => '_ss_content_width',
         'ss_content_position' => '_ss_content_position',
         'ss_parallax_speed'   => '_ss_parallax_speed',
-        'ss_inline_video'     => '_ss_inline_video',
-        'ss_video_width'      => '_ss_video_width',
         'ss_video_autoplay'   => '_ss_video_autoplay',
+        'ss_video_layout'     => '_ss_video_layout',
         'ss_section_height'   => '_ss_section_height',
         'ss_title_visible'    => '_ss_title_visible',
     );
@@ -311,6 +371,21 @@ function ss_save_meta( $post_id ) {
             update_post_meta( $post_id, $meta_key, $value );
         }
     }
+
+    // Save videos array as JSON
+    $videos = array();
+    if ( isset( $_POST['ss_videos'] ) && is_array( $_POST['ss_videos'] ) ) {
+        foreach ( $_POST['ss_videos'] as $v ) {
+            $url = isset( $v['url'] ) ? esc_url_raw( wp_unslash( $v['url'] ) ) : '';
+            if ( empty( $url ) ) continue;
+            $videos[] = array(
+                'url'   => $url,
+                'label' => isset( $v['label'] ) ? sanitize_text_field( wp_unslash( $v['label'] ) ) : '',
+                'width' => isset( $v['width'] ) ? intval( $v['width'] ) : 800,
+            );
+        }
+    }
+    update_post_meta( $post_id, '_ss_videos', wp_json_encode( $videos ) );
 }
 add_action( 'save_post_scroll_section', 'ss_save_meta' );
 
@@ -399,11 +474,19 @@ function ss_render_sections() {
         $content_width   = get_post_meta( $pid, '_ss_content_width', true ) ?: '900';
         $content_pos     = get_post_meta( $pid, '_ss_content_position', true ) ?: 'center';
         $parallax_speed  = get_post_meta( $pid, '_ss_parallax_speed', true ) ?: '0.3';
-        $inline_video    = get_post_meta( $pid, '_ss_inline_video', true );
-        $video_width     = get_post_meta( $pid, '_ss_video_width', true ) ?: '800';
         $video_autoplay  = get_post_meta( $pid, '_ss_video_autoplay', true ) ?: 'on_scroll';
+        $video_layout    = get_post_meta( $pid, '_ss_video_layout', true ) ?: 'stack';
         $section_height  = get_post_meta( $pid, '_ss_section_height', true ) ?: '100';
         $title_visible   = get_post_meta( $pid, '_ss_title_visible', true ) ?: 'yes';
+
+        // Load videos (new JSON format) with legacy fallback
+        $videos_raw = get_post_meta( $pid, '_ss_videos', true );
+        $videos = $videos_raw ? json_decode( $videos_raw, true ) : array();
+        if ( ! is_array( $videos ) ) $videos = array();
+        $legacy_video = get_post_meta( $pid, '_ss_inline_video', true );
+        if ( $legacy_video && empty( $videos ) ) {
+            $videos = array( array( 'url' => $legacy_video, 'label' => '', 'width' => get_post_meta( $pid, '_ss_video_width', true ) ?: 800 ) );
+        }
 
         $title     = get_the_title();
         $content   = wp_kses_post( apply_filters( 'the_content', get_the_content() ) );
@@ -455,34 +538,45 @@ function ss_render_sections() {
             $output .= '<div class="ss-body ss-stagger">' . $content . '</div>';
         }
 
-        // Inline video (stagger child 3)
-        if ( $inline_video ) {
-            $output .= '<div class="ss-inline-video ss-stagger" style="max-width:' . intval( $video_width ) . 'px;">';
-            if ( preg_match( '/\.(mp4|webm)(\?.*)?$/i', $inline_video ) ) {
-                // Direct MP4/WebM
-                $output .= '<video class="ss-video-player" ' . ( $video_autoplay === 'autoplay' ? 'autoplay muted' : '' ) . ' loop playsinline controls><source src="' . esc_url( $inline_video ) . '" type="video/mp4"></video>';
-            } else {
-                // YouTube / Vimeo — convert any URL format to embed
-                $embed_url = ss_to_embed_url( $inline_video );
-                $allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        // Videos (stagger child 3+)
+        if ( ! empty( $videos ) ) {
+            $layout_class = 'ss-video-grid ss-layout-' . esc_attr( $video_layout );
+            $output .= '<div class="' . $layout_class . ' ss-stagger">';
 
-                // Add autoplay & mute params when needed
-                if ( $video_autoplay === 'autoplay' || $video_autoplay === 'on_scroll' ) {
-                    $sep = ( strpos( $embed_url, '?' ) !== false ) ? '&' : '?';
-                    // YouTube params
-                    if ( strpos( $embed_url, 'youtube.com' ) !== false ) {
-                        $embed_url .= $sep . 'autoplay=1&mute=1&loop=1&playsinline=1&rel=0';
+            foreach ( $videos as $v ) {
+                $vurl   = $v['url'] ?? '';
+                $vlabel = $v['label'] ?? '';
+                $vwidth = intval( $v['width'] ?? 800 );
+                if ( empty( $vurl ) ) continue;
+
+                $output .= '<div class="ss-video-item" style="max-width:' . $vwidth . 'px;">';
+
+                if ( preg_match( '/\.(mp4|webm)(\?.*)?$/i', $vurl ) ) {
+                    $output .= '<video class="ss-video-player" ' . ( $video_autoplay === 'autoplay' ? 'autoplay muted' : '' ) . ' loop playsinline controls><source src="' . esc_url( $vurl ) . '" type="video/mp4"></video>';
+                } else {
+                    $embed_url = ss_to_embed_url( $vurl );
+                    $allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+                    if ( $video_autoplay === 'autoplay' || $video_autoplay === 'on_scroll' ) {
+                        $sep = ( strpos( $embed_url, '?' ) !== false ) ? '&' : '?';
+                        if ( strpos( $embed_url, 'youtube.com' ) !== false ) {
+                            $embed_url .= $sep . 'autoplay=1&mute=1&loop=1&playsinline=1&rel=0';
+                        }
+                        if ( strpos( $embed_url, 'vimeo.com' ) !== false ) {
+                            $embed_url .= $sep . 'autoplay=1&muted=1&loop=1&playsinline=1';
+                        }
                     }
-                    // Vimeo params
-                    if ( strpos( $embed_url, 'vimeo.com' ) !== false ) {
-                        $embed_url .= $sep . 'autoplay=1&muted=1&loop=1&playsinline=1';
-                    }
+                    $src = esc_url( $embed_url );
+                    $output .= '<div class="ss-video-embed"><iframe src="' . $src . '" frameborder="0" allow="' . $allow . '" allowfullscreen loading="lazy"></iframe></div>';
                 }
 
-                $src = esc_url( $embed_url );
-                $output .= '<div class="ss-video-embed"><iframe src="' . $src . '" frameborder="0" allow="' . $allow . '" allowfullscreen loading="lazy"></iframe></div>';
+                if ( $vlabel ) {
+                    $output .= '<p class="ss-video-label">' . esc_html( $vlabel ) . '</p>';
+                }
+
+                $output .= '</div>'; // .ss-video-item
             }
-            $output .= '</div>';
+
+            $output .= '</div>'; // .ss-video-grid
         }
 
         $output .= '</div>'; // .ss-content
@@ -605,8 +699,11 @@ function ss_admin_column_content( $column, $post_id ) {
             echo esc_html( ucfirst( get_post_meta( $post_id, '_ss_bg_type', true ) ?: 'image' ) );
             break;
         case 'ss_video':
-            $v = get_post_meta( $post_id, '_ss_inline_video', true );
-            echo $v ? '<span style="color:green;">Yes</span>' : '—';
+            $vids = json_decode( get_post_meta( $post_id, '_ss_videos', true ) ?: '[]', true );
+            $count = is_array( $vids ) ? count( $vids ) : 0;
+            // Legacy fallback
+            if ( $count === 0 && get_post_meta( $post_id, '_ss_inline_video', true ) ) $count = 1;
+            echo $count ? '<span style="color:green;">' . $count . '</span>' : '—';
             break;
     }
 }
