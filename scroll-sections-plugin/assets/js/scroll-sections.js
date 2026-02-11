@@ -1,12 +1,8 @@
 /**
- * Scroll Sections v2 — Smooth Inertia Scroll Engine
+ * Scroll Sections v2.1 — Native Scroll with Smooth Parallax
  *
- * Replaces browser scroll-snap with a Lenis-style smooth scroll.
- * - Inertia-based scrolling with configurable lerp
- * - Parallax backgrounds
- * - Staggered scroll-triggered reveal animations
- * - Inline video autoplay on scroll
- * - Navigation dots + keyboard nav
+ * Uses native browser scroll so the page header/footer remain visible.
+ * Applies lerp-based smooth parallax and scroll-triggered reveals.
  *
  * Zero dependencies.
  */
@@ -14,19 +10,13 @@
     'use strict';
 
     /* ---- Config ---- */
-    var LERP        = 0.07;   // smoothing factor (lower = smoother/slower)
-    var WHEEL_MULT  = 1.0;    // mouse wheel multiplier
-    var TOUCH_MULT  = 1.8;    // touch swipe multiplier
-    var REVEAL_AT   = 0.80;   // fraction of viewport — trigger reveal when section top reaches this point
+    var PARALLAX_LERP = 0.08;  // smoothing for parallax (lower = smoother)
+    var REVEAL_AT     = 0.82;  // reveal when section top reaches this % of viewport
 
     /* ---- State ---- */
-    var wrapper, smooth, sections, navDots, progressBar;
-    var targetScroll = 0;
-    var currentScroll = 0;
-    var maxScroll = 0;
-    var isRunning = false;
-    var touchStart = 0;
-    var raf = null;
+    var wrapper, sections, navDots, nav, progressBar;
+    var parallaxTargets = [];  // { el, speed, currentY, targetY }
+    var ticking = false;
 
     /* ---- Reduced motion check ---- */
     var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,14 +29,14 @@
         wrapper = document.getElementById('ss-wrapper');
         if (!wrapper) return;
 
-        smooth      = document.getElementById('ss-smooth');
         sections    = wrapper.querySelectorAll('.ss-section');
+        nav         = document.getElementById('ss-nav');
         navDots     = wrapper.querySelectorAll('.ss-nav-dot');
         progressBar = document.getElementById('ss-progress');
 
         if (!sections.length) return;
 
-        // Apply transition styles to each stagger element based on section data
+        // Apply transition styles to each stagger element
         sections.forEach(function (sec) {
             var duration = sec.getAttribute('data-duration') || '1.2';
             var delay    = parseFloat(sec.getAttribute('data-delay') || '0');
@@ -62,171 +52,88 @@
                     'filter ' + duration + 's ' + easing + ' ' + d + 's, ' +
                     'clip-path ' + duration + 's ' + easing + ' ' + d + 's';
             });
+
+            // Build parallax target list
+            var bg = sec.querySelector('.ss-bg');
+            if (bg) {
+                var speed = parseFloat(sec.getAttribute('data-parallax') || '0.3');
+                parallaxTargets.push({ el: bg, section: sec, speed: speed, currentY: 0, targetY: 0 });
+            }
         });
 
         if (prefersReducedMotion) {
-            // Show everything, skip smooth scroll engine
             sections.forEach(function (s) { s.classList.add('ss-in-view'); });
             return;
         }
 
-        calcMaxScroll();
+        // Smooth scroll feel via CSS
+        document.documentElement.style.scrollBehavior = 'smooth';
+
         bindEvents();
-        isRunning = true;
-        raf = requestAnimationFrame(loop);
 
-        // Initial reveal check
-        updateSections();
+        // Initial update
+        onScroll();
+
+        // Start parallax lerp loop
+        requestAnimationFrame(parallaxLoop);
     }
 
     /* ======================================================================
-       Layout
+       Events
        ====================================================================== */
-
-    function calcMaxScroll() {
-        maxScroll = smooth.scrollHeight - wrapper.clientHeight;
-        if (maxScroll < 0) maxScroll = 0;
-        // Clamp current values
-        targetScroll = clamp(targetScroll, 0, maxScroll);
-        currentScroll = clamp(currentScroll, 0, maxScroll);
-    }
-
-    /* ======================================================================
-       Scroll Input
-       ====================================================================== */
-
-    function onWheel(e) {
-        e.preventDefault();
-        var delta = e.deltaY;
-        // Normalize deltaMode (pixels vs lines vs pages)
-        if (e.deltaMode === 1) delta *= 36;
-        if (e.deltaMode === 2) delta *= window.innerHeight;
-        targetScroll = clamp(targetScroll + delta * WHEEL_MULT, 0, maxScroll);
-    }
-
-    function onTouchStart(e) {
-        touchStart = e.touches[0].clientY;
-    }
-
-    function onTouchMove(e) {
-        e.preventDefault();
-        var delta = (touchStart - e.touches[0].clientY) * TOUCH_MULT;
-        touchStart = e.touches[0].clientY;
-        targetScroll = clamp(targetScroll + delta, 0, maxScroll);
-    }
-
-    function onKeyDown(e) {
-        var tag = (e.target || e.srcElement).tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-        var jump = wrapper.clientHeight * 0.9;
-        switch (e.key) {
-            case 'ArrowDown': case 'PageDown':
-                e.preventDefault();
-                targetScroll = clamp(targetScroll + jump, 0, maxScroll);
-                break;
-            case 'ArrowUp': case 'PageUp':
-                e.preventDefault();
-                targetScroll = clamp(targetScroll - jump, 0, maxScroll);
-                break;
-            case 'Home':
-                e.preventDefault();
-                targetScroll = 0;
-                break;
-            case 'End':
-                e.preventDefault();
-                targetScroll = maxScroll;
-                break;
-        }
-    }
-
-    function onResize() {
-        calcMaxScroll();
-    }
 
     function bindEvents() {
-        wrapper.addEventListener('wheel', onWheel, { passive: false });
-        wrapper.addEventListener('touchstart', onTouchStart, { passive: true });
-        wrapper.addEventListener('touchmove', onTouchMove, { passive: false });
-        document.addEventListener('keydown', onKeyDown);
-        window.addEventListener('resize', onResize);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
 
-        // Nav dots
+        // Nav dots — smooth-scroll to section
         navDots.forEach(function (dot) {
             dot.addEventListener('click', function () {
                 var idx = parseInt(this.getAttribute('data-index'), 10);
                 if (sections[idx]) {
-                    targetScroll = clamp(sections[idx].offsetTop, 0, maxScroll);
+                    sections[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
         });
     }
 
-    /* ======================================================================
-       Render Loop
-       ====================================================================== */
-
-    function loop() {
-        if (!isRunning) return;
-
-        // Lerp towards target
-        currentScroll += (targetScroll - currentScroll) * LERP;
-
-        // Snap when close enough (< 0.5px)
-        if (Math.abs(targetScroll - currentScroll) < 0.5) {
-            currentScroll = targetScroll;
-        }
-
-        // Translate the smooth container
-        smooth.style.transform = 'translate3d(0,' + (-currentScroll) + 'px,0)';
-
-        // Update parallax, reveals, progress
-        updateParallax();
-        updateSections();
-        updateProgress();
-        updateNav();
-
-        raf = requestAnimationFrame(loop);
-    }
-
-    /* ======================================================================
-       Parallax
-       ====================================================================== */
-
-    function updateParallax() {
-        if (window.innerWidth <= 768) return;
-
-        var viewH = wrapper.clientHeight;
-
-        sections.forEach(function (sec) {
-            var bg = sec.querySelector('.ss-bg');
-            if (!bg) return;
-
-            var speed = parseFloat(sec.getAttribute('data-parallax') || '0.3');
-            if (speed === 0) return;
-
-            var secTop = sec.offsetTop;
-            var offset = currentScroll - secTop;
-            var translate = offset * speed * 0.4;
-
-            bg.style.transform = 'translate3d(0,' + translate + 'px,0)';
+    function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+            update();
+            ticking = false;
         });
     }
 
     /* ======================================================================
-       Section Reveal & Video
+       Main Update (runs on scroll)
        ====================================================================== */
 
-    function updateSections() {
-        var viewH = wrapper.clientHeight;
-        var triggerLine = currentScroll + viewH * REVEAL_AT;
+    function update() {
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        var viewH   = window.innerHeight;
+
+        updateReveals(scrollY, viewH);
+        updateParallaxTargets(scrollY, viewH);
+        updateNav(scrollY, viewH);
+        updateProgress(scrollY);
+        updateNavVisibility(scrollY, viewH);
+    }
+
+    /* ======================================================================
+       Reveals
+       ====================================================================== */
+
+    function updateReveals(scrollY, viewH) {
+        var triggerLine = scrollY + viewH * REVEAL_AT;
 
         sections.forEach(function (sec) {
-            var secTop    = sec.offsetTop;
-            var secBottom = secTop + sec.offsetHeight;
+            var rect      = sec.getBoundingClientRect();
+            var secTop    = scrollY + rect.top;
+            var secBottom = secTop + rect.height;
 
-            // In view = section top has passed the trigger line AND bottom hasn't fully left
-            var inView = (secTop < triggerLine) && (secBottom > currentScroll + viewH * 0.1);
+            var inView = (secTop < triggerLine) && (secBottom > scrollY + viewH * 0.1);
 
             if (inView && !sec.classList.contains('ss-in-view')) {
                 sec.classList.add('ss-in-view');
@@ -238,10 +145,49 @@
         });
     }
 
+    /* ======================================================================
+       Parallax (lerp-smoothed via rAF loop)
+       ====================================================================== */
+
+    function updateParallaxTargets(scrollY, viewH) {
+        if (window.innerWidth <= 768) return;
+
+        parallaxTargets.forEach(function (p) {
+            if (p.speed === 0) return;
+            var rect = p.section.getBoundingClientRect();
+            var secTop = scrollY + rect.top;
+            var offset = scrollY - secTop;
+            p.targetY = offset * p.speed * 0.4;
+        });
+    }
+
+    function parallaxLoop() {
+        var moved = false;
+
+        parallaxTargets.forEach(function (p) {
+            if (p.speed === 0) return;
+            p.currentY += (p.targetY - p.currentY) * PARALLAX_LERP;
+
+            if (Math.abs(p.targetY - p.currentY) < 0.1) {
+                p.currentY = p.targetY;
+            } else {
+                moved = true;
+            }
+
+            p.el.style.transform = 'translate3d(0,' + p.currentY + 'px,0)';
+        });
+
+        requestAnimationFrame(parallaxLoop);
+    }
+
+    /* ======================================================================
+       Video Play/Pause
+       ====================================================================== */
+
     function handleVideoPlay(sec, entering) {
         var autoplay = sec.getAttribute('data-video-autoplay');
 
-        // Background video: always play when in view
+        // Background video
         var bgVid = sec.querySelector('.ss-bg-video video');
         if (bgVid) {
             if (entering) { try { bgVid.play(); } catch(e){} }
@@ -260,11 +206,9 @@
                 }
             }
 
-            // For iframes (YouTube/Vimeo) — toggle autoplay via postMessage
             var iframe = sec.querySelector('.ss-video-embed iframe');
             if (iframe) {
                 if (entering) {
-                    // Attempt Vimeo/YouTube API play
                     try {
                         iframe.contentWindow.postMessage('{"method":"play"}', '*');
                         iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
@@ -283,13 +227,14 @@
        Nav & Progress
        ====================================================================== */
 
-    function updateNav() {
-        var viewH = wrapper.clientHeight;
-        var mid = currentScroll + viewH * 0.5;
+    function updateNav(scrollY, viewH) {
+        var mid = scrollY + viewH * 0.5;
         var activeIdx = 0;
 
         sections.forEach(function (sec, i) {
-            if (sec.offsetTop <= mid) {
+            var rect = sec.getBoundingClientRect();
+            var secTop = scrollY + rect.top;
+            if (secTop <= mid) {
                 activeIdx = i;
             }
         });
@@ -299,18 +244,32 @@
         });
     }
 
-    function updateProgress() {
+    function updateProgress(scrollY) {
+        if (!progressBar) return;
+        var wrapperRect = wrapper.getBoundingClientRect();
+        var wrapperTop  = scrollY + wrapperRect.top;
+        var wrapperH    = wrapper.offsetHeight;
+        var viewH       = window.innerHeight;
+        var maxScroll   = wrapperH - viewH;
+
         if (maxScroll <= 0) return;
-        var pct = (currentScroll / maxScroll) * 100;
+
+        var localScroll = scrollY - wrapperTop;
+        var pct = Math.max(0, Math.min(100, (localScroll / maxScroll) * 100));
         progressBar.style.width = pct + '%';
     }
 
-    /* ======================================================================
-       Utilities
-       ====================================================================== */
+    /** Show nav dots and progress bar only when the wrapper is in the viewport */
+    function updateNavVisibility(scrollY, viewH) {
+        var rect = wrapper.getBoundingClientRect();
+        var visible = (rect.bottom > 0) && (rect.top < viewH);
 
-    function clamp(val, min, max) {
-        return Math.max(min, Math.min(max, val));
+        if (nav) {
+            nav.classList.toggle('ss-nav-visible', visible);
+        }
+        if (progressBar) {
+            progressBar.classList.toggle('ss-progress-visible', visible);
+        }
     }
 
     /* ======================================================================

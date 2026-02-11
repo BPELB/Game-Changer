@@ -1,21 +1,19 @@
 /* ==========================================================================
-   Scroll Sections v2 — Cinematic Smooth Scroll
-   Inspired by ericprydz.com
+   Scroll Sections v2.1 — Cinematic Inline Scroll
+   Works within any WordPress theme — preserves header/footer.
    ========================================================================== */
 
-/* ---------- Wrapper (viewport lock) ---------- */
+/* ---------- Wrapper (flows inline) ---------- */
 
 .ss-wrapper {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
+    position: relative;
+    width: 100%;
     background: #000;
-    z-index: 9999;
 }
 
-/* Smooth-scrolling inner container — translated by JS */
+/* .ss-smooth is just a structural wrapper now — no transforms */
 .ss-smooth {
-    will-change: transform;
+    position: relative;
 }
 
 /* ---------- Section ---------- */
@@ -137,11 +135,6 @@
 
 /* ---------- Stagger Animations ---------- */
 
-/*
- * Each .ss-stagger child gets its own transition-delay via JS.
- * The base hidden state and reveal are controlled by the section's
- * data-animation attribute.
- */
 .ss-stagger {
     opacity: 0;
     will-change: transform, opacity, filter;
@@ -158,25 +151,15 @@
 
 /* --- Starting transforms per animation type --- */
 
-/* fade-up */
 [data-animation="fade-up"] .ss-stagger    { transform: translateY(80px); }
-/* fade-down */
 [data-animation="fade-down"] .ss-stagger  { transform: translateY(-80px); }
-/* fade-left (slide from right) */
 [data-animation="fade-left"] .ss-stagger  { transform: translateX(80px); }
-/* fade-right (slide from left) */
 [data-animation="fade-right"] .ss-stagger { transform: translateX(-80px); }
-/* zoom-in */
 [data-animation="zoom-in"] .ss-stagger    { transform: scale(0.8); }
-/* zoom-out */
 [data-animation="zoom-out"] .ss-stagger   { transform: scale(1.15); }
-/* blur-in */
 [data-animation="blur-in"] .ss-stagger    { filter: blur(16px); transform: scale(1.03); }
-/* clip-up */
 [data-animation="clip-up"] .ss-stagger    { clip-path: inset(100% 0 0 0); }
-/* clip-left */
 [data-animation="clip-left"] .ss-stagger  { clip-path: inset(0 100% 0 0); }
-/* none */
 [data-animation="none"] .ss-stagger       { opacity: 1; transform: none; }
 
 /* ---------- Navigation Dots ---------- */
@@ -187,6 +170,15 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 10001;
+    /* Hidden by default — JS shows it when wrapper is on-screen */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.ss-nav.ss-nav-visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .ss-nav ul {
@@ -251,6 +243,13 @@
     width: 0%;
     will-change: width;
     transition: width 0.1s linear;
+    /* Hidden by default — shown when wrapper is on-screen */
+    opacity: 0;
+    transition: width 0.1s linear, opacity 0.3s ease;
+}
+
+.ss-progress.ss-progress-visible {
+    opacity: 1;
 }
 
 /* ---------- Responsive ---------- */
@@ -272,13 +271,6 @@
 /* ---------- Reduced Motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-    .ss-smooth {
-        transform: none !important;
-    }
-    .ss-wrapper {
-        position: static;
-        overflow-y: auto;
-    }
     .ss-stagger {
         transition: none !important;
         opacity: 1 !important;
