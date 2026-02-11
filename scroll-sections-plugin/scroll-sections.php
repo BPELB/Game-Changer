@@ -184,8 +184,8 @@ function ss_render_meta_box( $post ) {
         <div class="ss-meta-grid">
             <p class="ss-full">
                 <label for="ss_inline_video">Video Embed URL</label>
-                <input type="url" id="ss_inline_video" name="ss_inline_video" value="<?php echo esc_url( $m['inline_video'] ); ?>" placeholder="https://www.youtube.com/embed/xxxxx or https://player.vimeo.com/video/xxxxx">
-                <small>Paste a YouTube or Vimeo <strong>embed</strong> URL, or an MP4 link. Leave blank for no inline video.</small>
+                <input type="url" id="ss_inline_video" name="ss_inline_video" value="<?php echo esc_url( $m['inline_video'] ); ?>" placeholder="https://www.youtube.com/watch?v=xxxxx">
+                <small>Paste any YouTube or Vimeo URL (watch, share, or embed) — it will be auto-converted. Or paste an MP4 link. Leave blank for no video.</small>
             </p>
             <p>
                 <label for="ss_video_width">Video Max Width (px)</label>
@@ -458,17 +458,28 @@ function ss_render_sections() {
         // Inline video (stagger child 3)
         if ( $inline_video ) {
             $output .= '<div class="ss-inline-video ss-stagger" style="max-width:' . intval( $video_width ) . 'px;">';
-            if ( preg_match( '/\.(mp4|webm)$/i', $inline_video ) ) {
+            if ( preg_match( '/\.(mp4|webm)(\?.*)?$/i', $inline_video ) ) {
                 // Direct MP4/WebM
                 $output .= '<video class="ss-video-player" ' . ( $video_autoplay === 'autoplay' ? 'autoplay muted' : '' ) . ' loop playsinline controls><source src="' . esc_url( $inline_video ) . '" type="video/mp4"></video>';
             } else {
-                // Embed (YouTube / Vimeo iframe)
+                // YouTube / Vimeo — convert any URL format to embed
+                $embed_url = ss_to_embed_url( $inline_video );
                 $allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-                $src = esc_url( $inline_video );
-                // Add autoplay param if needed
-                if ( $video_autoplay === 'autoplay' && strpos( $src, 'autoplay' ) === false ) {
-                    $src .= ( strpos( $src, '?' ) !== false ? '&' : '?' ) . 'autoplay=1&mute=1';
+
+                // Add autoplay & mute params when needed
+                if ( $video_autoplay === 'autoplay' || $video_autoplay === 'on_scroll' ) {
+                    $sep = ( strpos( $embed_url, '?' ) !== false ) ? '&' : '?';
+                    // YouTube params
+                    if ( strpos( $embed_url, 'youtube.com' ) !== false ) {
+                        $embed_url .= $sep . 'autoplay=1&mute=1&loop=1&playsinline=1&rel=0';
+                    }
+                    // Vimeo params
+                    if ( strpos( $embed_url, 'vimeo.com' ) !== false ) {
+                        $embed_url .= $sep . 'autoplay=1&muted=1&loop=1&playsinline=1';
+                    }
                 }
+
+                $src = esc_url( $embed_url );
                 $output .= '<div class="ss-video-embed"><iframe src="' . $src . '" frameborder="0" allow="' . $allow . '" allowfullscreen loading="lazy"></iframe></div>';
             }
             $output .= '</div>';
@@ -506,6 +517,25 @@ add_shortcode( 'scroll_sections', 'ss_shortcode' );
 /* ==========================================================================
    Helpers
    ========================================================================== */
+
+/**
+ * Convert any YouTube or Vimeo URL to its embeddable form.
+ * Accepts watch URLs, share URLs, short URLs, and existing embed URLs.
+ */
+function ss_to_embed_url( $url ) {
+    // YouTube: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID
+    if ( preg_match( '/(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $m ) ) {
+        return 'https://www.youtube.com/embed/' . $m[1] . '?enablejsapi=1';
+    }
+
+    // Vimeo: vimeo.com/ID, player.vimeo.com/video/ID
+    if ( preg_match( '/vimeo\.com\/(?:video\/)?(\d+)/', $url, $m ) ) {
+        return 'https://player.vimeo.com/video/' . $m[1] . '?api=1';
+    }
+
+    // Already an embed or unknown — return as-is
+    return $url;
+}
 
 function ss_hex_to_rgba( $hex, $alpha ) {
     $hex = ltrim( $hex, '#' );
