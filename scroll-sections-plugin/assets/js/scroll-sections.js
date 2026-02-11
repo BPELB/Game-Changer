@@ -1,190 +1,326 @@
 /**
- * Scroll Sections - Parallax & Scroll-Triggered Animations
- * Vanilla JS, no dependencies.
+ * Scroll Sections v2 — Smooth Inertia Scroll Engine
+ *
+ * Replaces browser scroll-snap with a Lenis-style smooth scroll.
+ * - Inertia-based scrolling with configurable lerp
+ * - Parallax backgrounds
+ * - Staggered scroll-triggered reveal animations
+ * - Inline video autoplay on scroll
+ * - Navigation dots + keyboard nav
+ *
+ * Zero dependencies.
  */
 (function () {
     'use strict';
 
-    var container;
-    var sections;
-    var navDots;
-    var progressBar;
-    var ticking = false;
+    /* ---- Config ---- */
+    var LERP        = 0.07;   // smoothing factor (lower = smoother/slower)
+    var WHEEL_MULT  = 1.0;    // mouse wheel multiplier
+    var TOUCH_MULT  = 1.8;    // touch swipe multiplier
+    var REVEAL_AT   = 0.80;   // fraction of viewport — trigger reveal when section top reaches this point
+
+    /* ---- State ---- */
+    var wrapper, smooth, sections, navDots, progressBar;
+    var targetScroll = 0;
+    var currentScroll = 0;
+    var maxScroll = 0;
+    var isRunning = false;
+    var touchStart = 0;
+    var raf = null;
+
+    /* ---- Reduced motion check ---- */
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ======================================================================
+       Init
+       ====================================================================== */
 
     function init() {
-        container = document.getElementById('ss-container');
-        if (!container) return;
+        wrapper = document.getElementById('ss-wrapper');
+        if (!wrapper) return;
 
-        sections = container.querySelectorAll('.ss-section');
-        navDots = document.querySelectorAll('.ss-nav-dot');
+        smooth      = document.getElementById('ss-smooth');
+        sections    = wrapper.querySelectorAll('.ss-section');
+        navDots     = wrapper.querySelectorAll('.ss-nav-dot');
+        progressBar = document.getElementById('ss-progress');
 
-        // Create progress bar
-        progressBar = document.createElement('div');
-        progressBar.className = 'ss-progress';
-        container.appendChild(progressBar);
+        if (!sections.length) return;
 
-        // Bind scroll events
-        container.addEventListener('scroll', onScroll, { passive: true });
+        // Apply transition styles to each stagger element based on section data
+        sections.forEach(function (sec) {
+            var duration = sec.getAttribute('data-duration') || '1.2';
+            var delay    = parseFloat(sec.getAttribute('data-delay') || '0');
+            var stagger  = parseFloat(sec.getAttribute('data-stagger') || '0.15');
+            var easing   = sec.getAttribute('data-easing') || 'cubic-bezier(0.25,0.46,0.45,0.94)';
 
-        // Bind nav dot clicks
-        navDots.forEach(function (dot) {
-            dot.addEventListener('click', function () {
-                var index = parseInt(this.getAttribute('data-index'), 10);
-                if (sections[index]) {
-                    sections[index].scrollIntoView({ behavior: 'smooth' });
-                }
+            var children = sec.querySelectorAll('.ss-stagger');
+            children.forEach(function (child, idx) {
+                var d = delay + (idx * stagger);
+                child.style.transition =
+                    'opacity ' + duration + 's ' + easing + ' ' + d + 's, ' +
+                    'transform ' + duration + 's ' + easing + ' ' + d + 's, ' +
+                    'filter ' + duration + 's ' + easing + ' ' + d + 's, ' +
+                    'clip-path ' + duration + 's ' + easing + ' ' + d + 's';
             });
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', onKeyDown);
+        if (prefersReducedMotion) {
+            // Show everything, skip smooth scroll engine
+            sections.forEach(function (s) { s.classList.add('ss-in-view'); });
+            return;
+        }
 
-        // Initial check
-        onScroll();
+        calcMaxScroll();
+        bindEvents();
+        isRunning = true;
+        raf = requestAnimationFrame(loop);
+
+        // Initial reveal check
+        updateSections();
     }
 
-    /**
-     * Scroll handler - triggers parallax and reveal animations.
-     */
-    function onScroll() {
-        if (ticking) return;
-        ticking = true;
+    /* ======================================================================
+       Layout
+       ====================================================================== */
 
-        requestAnimationFrame(function () {
-            updateParallax();
-            updateActiveSection();
-            updateProgress();
-            ticking = false;
+    function calcMaxScroll() {
+        maxScroll = smooth.scrollHeight - wrapper.clientHeight;
+        if (maxScroll < 0) maxScroll = 0;
+        // Clamp current values
+        targetScroll = clamp(targetScroll, 0, maxScroll);
+        currentScroll = clamp(currentScroll, 0, maxScroll);
+    }
+
+    /* ======================================================================
+       Scroll Input
+       ====================================================================== */
+
+    function onWheel(e) {
+        e.preventDefault();
+        var delta = e.deltaY;
+        // Normalize deltaMode (pixels vs lines vs pages)
+        if (e.deltaMode === 1) delta *= 36;
+        if (e.deltaMode === 2) delta *= window.innerHeight;
+        targetScroll = clamp(targetScroll + delta * WHEEL_MULT, 0, maxScroll);
+    }
+
+    function onTouchStart(e) {
+        touchStart = e.touches[0].clientY;
+    }
+
+    function onTouchMove(e) {
+        e.preventDefault();
+        var delta = (touchStart - e.touches[0].clientY) * TOUCH_MULT;
+        touchStart = e.touches[0].clientY;
+        targetScroll = clamp(targetScroll + delta, 0, maxScroll);
+    }
+
+    function onKeyDown(e) {
+        var tag = (e.target || e.srcElement).tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+        var jump = wrapper.clientHeight * 0.9;
+        switch (e.key) {
+            case 'ArrowDown': case 'PageDown':
+                e.preventDefault();
+                targetScroll = clamp(targetScroll + jump, 0, maxScroll);
+                break;
+            case 'ArrowUp': case 'PageUp':
+                e.preventDefault();
+                targetScroll = clamp(targetScroll - jump, 0, maxScroll);
+                break;
+            case 'Home':
+                e.preventDefault();
+                targetScroll = 0;
+                break;
+            case 'End':
+                e.preventDefault();
+                targetScroll = maxScroll;
+                break;
+        }
+    }
+
+    function onResize() {
+        calcMaxScroll();
+    }
+
+    function bindEvents() {
+        wrapper.addEventListener('wheel', onWheel, { passive: false });
+        wrapper.addEventListener('touchstart', onTouchStart, { passive: true });
+        wrapper.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('keydown', onKeyDown);
+        window.addEventListener('resize', onResize);
+
+        // Nav dots
+        navDots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+                var idx = parseInt(this.getAttribute('data-index'), 10);
+                if (sections[idx]) {
+                    targetScroll = clamp(sections[idx].offsetTop, 0, maxScroll);
+                }
+            });
         });
     }
 
-    /**
-     * Parallax: Shift background layer based on scroll position within each section.
-     */
-    function updateParallax() {
-        var scrollTop = container.scrollTop;
-        var viewH = container.clientHeight;
+    /* ======================================================================
+       Render Loop
+       ====================================================================== */
 
-        // Skip parallax on small screens
+    function loop() {
+        if (!isRunning) return;
+
+        // Lerp towards target
+        currentScroll += (targetScroll - currentScroll) * LERP;
+
+        // Snap when close enough (< 0.5px)
+        if (Math.abs(targetScroll - currentScroll) < 0.5) {
+            currentScroll = targetScroll;
+        }
+
+        // Translate the smooth container
+        smooth.style.transform = 'translate3d(0,' + (-currentScroll) + 'px,0)';
+
+        // Update parallax, reveals, progress
+        updateParallax();
+        updateSections();
+        updateProgress();
+        updateNav();
+
+        raf = requestAnimationFrame(loop);
+    }
+
+    /* ======================================================================
+       Parallax
+       ====================================================================== */
+
+    function updateParallax() {
         if (window.innerWidth <= 768) return;
 
-        sections.forEach(function (section) {
-            var bg = section.querySelector('.ss-bg');
+        var viewH = wrapper.clientHeight;
+
+        sections.forEach(function (sec) {
+            var bg = sec.querySelector('.ss-bg');
             if (!bg) return;
 
-            var speed = parseFloat(section.getAttribute('data-parallax-speed')) || 0.3;
-            var rect = section.getBoundingClientRect();
-            var sectionTop = section.offsetTop;
-            var offset = scrollTop - sectionTop;
+            var speed = parseFloat(sec.getAttribute('data-parallax') || '0.3');
+            if (speed === 0) return;
 
-            // Only apply parallax when section is near the viewport
-            if (rect.bottom < -viewH || rect.top > viewH * 2) return;
+            var secTop = sec.offsetTop;
+            var offset = currentScroll - secTop;
+            var translate = offset * speed * 0.4;
 
-            var translate = offset * speed * 0.5;
             bg.style.transform = 'translate3d(0,' + translate + 'px,0)';
         });
     }
 
-    /**
-     * Determine active section and trigger content reveal animations.
-     */
-    function updateActiveSection() {
-        var scrollTop = container.scrollTop;
-        var viewH = container.clientHeight;
-        var activeIndex = 0;
+    /* ======================================================================
+       Section Reveal & Video
+       ====================================================================== */
 
-        sections.forEach(function (section, i) {
-            var sectionTop = section.offsetTop;
-            var sectionMid = sectionTop + viewH / 2;
+    function updateSections() {
+        var viewH = wrapper.clientHeight;
+        var triggerLine = currentScroll + viewH * REVEAL_AT;
 
-            // Determine active section (whichever section's midpoint we've scrolled past)
-            if (scrollTop + viewH / 2 >= sectionTop) {
-                activeIndex = i;
+        sections.forEach(function (sec) {
+            var secTop    = sec.offsetTop;
+            var secBottom = secTop + sec.offsetHeight;
+
+            // In view = section top has passed the trigger line AND bottom hasn't fully left
+            var inView = (secTop < triggerLine) && (secBottom > currentScroll + viewH * 0.1);
+
+            if (inView && !sec.classList.contains('ss-in-view')) {
+                sec.classList.add('ss-in-view');
+                handleVideoPlay(sec, true);
+            } else if (!inView && sec.classList.contains('ss-in-view')) {
+                sec.classList.remove('ss-in-view');
+                handleVideoPlay(sec, false);
             }
-
-            // Reveal animation when section enters viewport
-            var anim = section.querySelector('.ss-anim');
-            if (!anim) return;
-
-            var triggerPoint = sectionTop - viewH * 0.75;
-            var exitPoint = sectionTop + viewH;
-
-            if (scrollTop >= triggerPoint && scrollTop < exitPoint) {
-                anim.classList.add('ss-visible');
-            } else {
-                anim.classList.remove('ss-visible');
-            }
-        });
-
-        // Update nav dots
-        navDots.forEach(function (dot, i) {
-            dot.classList.toggle('ss-nav-active', i === activeIndex);
         });
     }
 
-    /**
-     * Update progress bar.
-     */
-    function updateProgress() {
-        var scrollTop = container.scrollTop;
-        var maxScroll = container.scrollHeight - container.clientHeight;
-        if (maxScroll <= 0) return;
+    function handleVideoPlay(sec, entering) {
+        var autoplay = sec.getAttribute('data-video-autoplay');
 
-        var pct = (scrollTop / maxScroll) * 100;
-        progressBar.style.width = pct + '%';
-    }
+        // Background video: always play when in view
+        var bgVid = sec.querySelector('.ss-bg-video video');
+        if (bgVid) {
+            if (entering) { try { bgVid.play(); } catch(e){} }
+            else { try { bgVid.pause(); } catch(e){} }
+        }
 
-    /**
-     * Keyboard navigation: arrow keys and page up/down.
-     */
-    function onKeyDown(e) {
-        if (!container) return;
+        // Inline video
+        if (autoplay === 'on_scroll' || autoplay === 'autoplay') {
+            var inlineVid = sec.querySelector('.ss-video-player');
+            if (inlineVid) {
+                if (entering) {
+                    inlineVid.muted = true;
+                    try { inlineVid.play(); } catch(e){}
+                } else {
+                    try { inlineVid.pause(); } catch(e){}
+                }
+            }
 
-        // Don't hijack if user is typing in an input
-        var tag = (e.target || e.srcElement).tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-        var current = getCurrentSectionIndex();
-
-        if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-            e.preventDefault();
-            goToSection(current + 1);
-        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-            e.preventDefault();
-            goToSection(current - 1);
-        } else if (e.key === 'Home') {
-            e.preventDefault();
-            goToSection(0);
-        } else if (e.key === 'End') {
-            e.preventDefault();
-            goToSection(sections.length - 1);
+            // For iframes (YouTube/Vimeo) — toggle autoplay via postMessage
+            var iframe = sec.querySelector('.ss-video-embed iframe');
+            if (iframe) {
+                if (entering) {
+                    // Attempt Vimeo/YouTube API play
+                    try {
+                        iframe.contentWindow.postMessage('{"method":"play"}', '*');
+                        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                    } catch(e){}
+                } else {
+                    try {
+                        iframe.contentWindow.postMessage('{"method":"pause"}', '*');
+                        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                    } catch(e){}
+                }
+            }
         }
     }
 
-    function getCurrentSectionIndex() {
-        var scrollTop = container.scrollTop;
-        var viewH = container.clientHeight;
-        var best = 0;
+    /* ======================================================================
+       Nav & Progress
+       ====================================================================== */
 
-        sections.forEach(function (section, i) {
-            if (scrollTop + viewH / 2 >= section.offsetTop) {
-                best = i;
+    function updateNav() {
+        var viewH = wrapper.clientHeight;
+        var mid = currentScroll + viewH * 0.5;
+        var activeIdx = 0;
+
+        sections.forEach(function (sec, i) {
+            if (sec.offsetTop <= mid) {
+                activeIdx = i;
             }
         });
 
-        return best;
+        navDots.forEach(function (dot, i) {
+            dot.classList.toggle('ss-nav-active', i === activeIdx);
+        });
     }
 
-    function goToSection(index) {
-        if (index < 0) index = 0;
-        if (index >= sections.length) index = sections.length - 1;
-        sections[index].scrollIntoView({ behavior: 'smooth' });
+    function updateProgress() {
+        if (maxScroll <= 0) return;
+        var pct = (currentScroll / maxScroll) * 100;
+        progressBar.style.width = pct + '%';
     }
 
-    // Boot
+    /* ======================================================================
+       Utilities
+       ====================================================================== */
+
+    function clamp(val, min, max) {
+        return Math.max(min, Math.min(max, val));
+    }
+
+    /* ======================================================================
+       Boot
+       ====================================================================== */
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
+
 })();

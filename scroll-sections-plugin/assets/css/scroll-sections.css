@@ -1,19 +1,21 @@
 /* ==========================================================================
-   Scroll Sections - Full-Screen Scroll Effects
-   Inspired by ericprydz.com dark immersive design
+   Scroll Sections v2 — Cinematic Smooth Scroll
+   Inspired by ericprydz.com
    ========================================================================== */
 
-/* ---------- Container & Scroll Snap ---------- */
+/* ---------- Wrapper (viewport lock) ---------- */
 
-.ss-container {
-    width: 100%;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+.ss-wrapper {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
     background: #000;
+    z-index: 9999;
+}
+
+/* Smooth-scrolling inner container — translated by JS */
+.ss-smooth {
+    will-change: transform;
 }
 
 /* ---------- Section ---------- */
@@ -21,29 +23,31 @@
 .ss-section {
     position: relative;
     width: 100%;
-    height: 100vh;
-    min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 
-/* ---------- Background Layer ---------- */
+/* Content position variants */
+.ss-section.ss-pos-top    { align-items: flex-start; padding-top: 10vh; }
+.ss-section.ss-pos-center { align-items: center; }
+.ss-section.ss-pos-bottom { align-items: flex-end; padding-bottom: 10vh; }
+
+.ss-section {
+    justify-content: center;
+}
+
+/* ---------- Background ---------- */
 
 .ss-bg {
     position: absolute;
-    inset: -20%; /* extra space for parallax movement */
+    inset: -15%;
     z-index: 0;
     will-change: transform;
-    transition: transform 0.1s linear;
 }
 
 .ss-bg-image {
     background-size: cover;
-    background-position: center center;
+    background-position: center;
     background-repeat: no-repeat;
 }
 
@@ -57,10 +61,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.ss-bg-color {
-    /* color set inline */
 }
 
 /* ---------- Overlay ---------- */
@@ -78,87 +78,106 @@
     position: relative;
     z-index: 2;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 3rem 2rem;
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* ---------- Title ---------- */
+
 .ss-title {
-    font-size: clamp(2rem, 5vw, 5rem);
+    font-size: clamp(2.2rem, 5vw, 5.5rem);
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    margin: 0 0 1rem;
-    line-height: 1.1;
+    margin: 0 0 1.2rem;
+    line-height: 1.05;
 }
 
+/* ---------- Body ---------- */
+
 .ss-body {
-    font-size: clamp(1rem, 1.5vw, 1.25rem);
-    line-height: 1.7;
+    font-size: clamp(1rem, 1.4vw, 1.3rem);
+    line-height: 1.75;
     opacity: 0.9;
 }
 
-.ss-body p {
-    margin: 0 0 1em;
+.ss-body p { margin: 0 0 1em; }
+.ss-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.ss-body a:hover { opacity: 0.7; }
+
+/* ---------- Inline Video ---------- */
+
+.ss-inline-video {
+    margin: 2rem auto 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
 
-.ss-body a {
-    color: #fff;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+.ss-inline-video video,
+.ss-video-embed iframe {
+    display: block;
+    width: 100%;
+    border: 0;
 }
 
-.ss-body a:hover {
-    opacity: 0.8;
+.ss-video-embed {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
 }
 
-/* ---------- Scroll-Triggered Animation States ---------- */
+.ss-video-embed iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
 
-/* Initial (hidden) state */
-.ss-anim {
+/* ---------- Stagger Animations ---------- */
+
+/*
+ * Each .ss-stagger child gets its own transition-delay via JS.
+ * The base hidden state and reveal are controlled by the section's
+ * data-animation attribute.
+ */
+.ss-stagger {
     opacity: 0;
-    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                filter 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform, opacity, filter;
+    /* transition set dynamically by JS via inline styles */
 }
 
-/* Directional starting positions */
-[data-animation="fade-up"] .ss-anim {
-    transform: translateY(60px);
-}
-
-[data-animation="fade-down"] .ss-anim {
-    transform: translateY(-60px);
-}
-
-[data-animation="fade-left"] .ss-anim {
-    transform: translateX(60px);
-}
-
-[data-animation="fade-right"] .ss-anim {
-    transform: translateX(-60px);
-}
-
-[data-animation="zoom-in"] .ss-anim {
-    transform: scale(0.85);
-}
-
-[data-animation="blur-in"] .ss-anim {
-    filter: blur(12px);
-    transform: scale(1.02);
-}
-
-[data-animation="none"] .ss-anim {
+/* Visible state */
+.ss-section.ss-in-view .ss-stagger {
     opacity: 1;
-    transform: none;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
 }
 
-/* Visible (animated-in) state */
-.ss-anim.ss-visible {
-    opacity: 1;
-    transform: translateY(0) translateX(0) scale(1);
-    filter: blur(0);
-}
+/* --- Starting transforms per animation type --- */
+
+/* fade-up */
+[data-animation="fade-up"] .ss-stagger    { transform: translateY(80px); }
+/* fade-down */
+[data-animation="fade-down"] .ss-stagger  { transform: translateY(-80px); }
+/* fade-left (slide from right) */
+[data-animation="fade-left"] .ss-stagger  { transform: translateX(80px); }
+/* fade-right (slide from left) */
+[data-animation="fade-right"] .ss-stagger { transform: translateX(-80px); }
+/* zoom-in */
+[data-animation="zoom-in"] .ss-stagger    { transform: scale(0.8); }
+/* zoom-out */
+[data-animation="zoom-out"] .ss-stagger   { transform: scale(1.15); }
+/* blur-in */
+[data-animation="blur-in"] .ss-stagger    { filter: blur(16px); transform: scale(1.03); }
+/* clip-up */
+[data-animation="clip-up"] .ss-stagger    { clip-path: inset(100% 0 0 0); }
+/* clip-left */
+[data-animation="clip-left"] .ss-stagger  { clip-path: inset(0 100% 0 0); }
+/* none */
+[data-animation="none"] .ss-stagger       { opacity: 1; transform: none; }
 
 /* ---------- Navigation Dots ---------- */
 
@@ -167,7 +186,7 @@
     right: 1.5rem;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 100;
+    z-index: 10001;
 }
 
 .ss-nav ul {
@@ -184,17 +203,17 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(255,255,255,0.5);
     background: transparent;
     cursor: pointer;
     padding: 0;
     position: relative;
-    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+    transition: background 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
 }
 
 .ss-nav-dot:hover {
     border-color: #fff;
-    transform: scale(1.3);
+    transform: scale(1.4);
 }
 
 .ss-nav-dot.ss-nav-active {
@@ -207,91 +226,67 @@
     right: 24px;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0,0,0,0.85);
     color: #fff;
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 4px;
     font-size: 0.75rem;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.25s ease;
 }
 
-.ss-nav-dot:hover .ss-nav-tooltip {
-    opacity: 1;
-}
+.ss-nav-dot:hover .ss-nav-tooltip { opacity: 1; }
 
-/* ---------- Scroll Progress Bar ---------- */
+/* ---------- Progress Bar ---------- */
 
 .ss-progress {
     position: fixed;
     top: 0;
     left: 0;
     height: 3px;
-    background: linear-gradient(90deg, #fff 0%, rgba(255,255,255,0.5) 100%);
-    z-index: 101;
+    background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+    z-index: 10001;
     width: 0%;
-    transition: width 0.15s linear;
+    will-change: width;
+    transition: width 0.1s linear;
 }
 
 /* ---------- Responsive ---------- */
 
 @media (max-width: 768px) {
-    .ss-nav {
-        right: 0.75rem;
-    }
+    .ss-nav { right: 0.5rem; }
+    .ss-nav-dot { width: 9px; height: 9px; }
+    .ss-nav-tooltip { display: none; }
 
-    .ss-nav-dot {
-        width: 10px;
-        height: 10px;
-    }
+    .ss-content { padding: 2rem 1.25rem; }
+    .ss-bg { inset: -5%; }
 
-    .ss-nav-tooltip {
-        display: none;
-    }
-
-    .ss-content {
-        padding: 1.5rem;
-    }
-
-    .ss-bg {
-        /* Disable parallax overflow on mobile for perf */
-        inset: 0;
-    }
-
-    /* Reduce animation distances on mobile */
-    [data-animation="fade-up"] .ss-anim {
-        transform: translateY(30px);
-    }
-
-    [data-animation="fade-down"] .ss-anim {
-        transform: translateY(-30px);
-    }
-
-    [data-animation="fade-left"] .ss-anim,
-    [data-animation="fade-right"] .ss-anim {
-        transform: translateX(30px);
-    }
+    [data-animation="fade-up"] .ss-stagger    { transform: translateY(40px); }
+    [data-animation="fade-down"] .ss-stagger  { transform: translateY(-40px); }
+    [data-animation="fade-left"] .ss-stagger  { transform: translateX(40px); }
+    [data-animation="fade-right"] .ss-stagger { transform: translateX(-40px); }
 }
 
 /* ---------- Reduced Motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-    .ss-container {
-        scroll-behavior: auto;
-        scroll-snap-type: none;
+    .ss-smooth {
+        transform: none !important;
     }
-
-    .ss-anim {
-        transition: none;
-        opacity: 1;
+    .ss-wrapper {
+        position: static;
+        overflow-y: auto;
+    }
+    .ss-stagger {
+        transition: none !important;
+        opacity: 1 !important;
         transform: none !important;
         filter: none !important;
+        clip-path: none !important;
     }
-
     .ss-bg {
         inset: 0;
-        transition: none;
     }
 }

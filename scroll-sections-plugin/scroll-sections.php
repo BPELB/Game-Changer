@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Scroll Sections
- * Description: Full-screen scroll-snapping sections with parallax backgrounds and scroll-triggered animations. Inspired by ericprydz.com. Use the [scroll_sections] shortcode or the included page template.
- * Version: 1.0.0
+ * Description: Cinematic full-screen sections with smooth inertia scrolling, parallax backgrounds, inline video embeds, and scroll-triggered animations. Inspired by ericprydz.com. Use the [scroll_sections] shortcode or the included page template.
+ * Version: 2.0.0
  * Author: Brandon
  * Text Domain: scroll-sections
  */
@@ -11,13 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SCROLL_SECTIONS_VERSION', '1.0.0' );
+define( 'SCROLL_SECTIONS_VERSION', '2.0.0' );
 define( 'SCROLL_SECTIONS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCROLL_SECTIONS_URL', plugin_dir_url( __FILE__ ) );
 
-/**
- * Register the "scroll_section" custom post type.
- */
+/* ==========================================================================
+   Custom Post Type
+   ========================================================================== */
+
 function ss_register_post_type() {
     $labels = array(
         'name'               => 'Scroll Sections',
@@ -33,145 +34,244 @@ function ss_register_post_type() {
         'menu_name'          => 'Scroll Sections',
     );
 
-    $args = array(
-        'labels'             => $labels,
-        'public'             => false,
-        'show_ui'            => true,
-        'show_in_menu'       => true,
-        'menu_icon'          => 'dashicons-slides',
-        'supports'           => array( 'title', 'editor', 'thumbnail' ),
-        'has_archive'        => false,
-        'rewrite'            => false,
-        'show_in_rest'       => true,
-    );
-
-    register_post_type( 'scroll_section', $args );
+    register_post_type( 'scroll_section', array(
+        'labels'       => $labels,
+        'public'       => false,
+        'show_ui'      => true,
+        'show_in_menu' => true,
+        'menu_icon'    => 'dashicons-slides',
+        'supports'     => array( 'title', 'editor', 'thumbnail' ),
+        'has_archive'  => false,
+        'rewrite'      => false,
+        'show_in_rest' => true,
+    ) );
 }
 add_action( 'init', 'ss_register_post_type' );
 
-/**
- * On activation, flush rewrite rules so the post type is recognized.
- */
 function ss_activate() {
     ss_register_post_type();
     flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'ss_activate' );
 
-/**
- * On deactivation, clean up rewrite rules.
- */
 function ss_deactivate() {
     flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'ss_deactivate' );
 
-/**
- * Add meta boxes for section settings.
- */
+/* ==========================================================================
+   Meta Boxes
+   ========================================================================== */
+
 function ss_add_meta_boxes() {
-    add_meta_box(
-        'ss_section_settings',
-        'Section Settings',
-        'ss_render_meta_box',
-        'scroll_section',
-        'side',
-        'default'
-    );
+    add_meta_box( 'ss_section_settings', 'Section Settings', 'ss_render_meta_box', 'scroll_section', 'normal', 'high' );
 }
 add_action( 'add_meta_boxes', 'ss_add_meta_boxes' );
 
-/**
- * Render the section settings meta box.
- */
 function ss_render_meta_box( $post ) {
     wp_nonce_field( 'ss_save_meta', 'ss_meta_nonce' );
 
-    $order          = get_post_meta( $post->ID, '_ss_order', true );
-    $bg_type        = get_post_meta( $post->ID, '_ss_bg_type', true ) ?: 'image';
-    $bg_video       = get_post_meta( $post->ID, '_ss_bg_video', true );
-    $overlay        = get_post_meta( $post->ID, '_ss_overlay', true ) ?: '0.5';
-    $overlay_color  = get_post_meta( $post->ID, '_ss_overlay_color', true ) ?: '#000000';
-    $animation      = get_post_meta( $post->ID, '_ss_animation', true ) ?: 'fade-up';
-    $text_align     = get_post_meta( $post->ID, '_ss_text_align', true ) ?: 'center';
-    $content_width  = get_post_meta( $post->ID, '_ss_content_width', true ) ?: '800';
-    $parallax_speed = get_post_meta( $post->ID, '_ss_parallax_speed', true ) ?: '0.3';
+    $m = array(
+        'order'           => get_post_meta( $post->ID, '_ss_order', true ),
+        'bg_type'         => get_post_meta( $post->ID, '_ss_bg_type', true ) ?: 'image',
+        'bg_video'        => get_post_meta( $post->ID, '_ss_bg_video', true ),
+        'overlay'         => get_post_meta( $post->ID, '_ss_overlay', true ) ?: '0.4',
+        'overlay_color'   => get_post_meta( $post->ID, '_ss_overlay_color', true ) ?: '#000000',
+        'animation'       => get_post_meta( $post->ID, '_ss_animation', true ) ?: 'fade-up',
+        'anim_duration'   => get_post_meta( $post->ID, '_ss_anim_duration', true ) ?: '1.2',
+        'anim_delay'      => get_post_meta( $post->ID, '_ss_anim_delay', true ) ?: '0',
+        'anim_stagger'    => get_post_meta( $post->ID, '_ss_anim_stagger', true ) ?: '0.15',
+        'anim_easing'     => get_post_meta( $post->ID, '_ss_anim_easing', true ) ?: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'text_align'      => get_post_meta( $post->ID, '_ss_text_align', true ) ?: 'center',
+        'content_width'   => get_post_meta( $post->ID, '_ss_content_width', true ) ?: '900',
+        'content_position'=> get_post_meta( $post->ID, '_ss_content_position', true ) ?: 'center',
+        'parallax_speed'  => get_post_meta( $post->ID, '_ss_parallax_speed', true ) ?: '0.3',
+        'inline_video'    => get_post_meta( $post->ID, '_ss_inline_video', true ),
+        'video_width'     => get_post_meta( $post->ID, '_ss_video_width', true ) ?: '800',
+        'video_autoplay'  => get_post_meta( $post->ID, '_ss_video_autoplay', true ) ?: 'on_scroll',
+        'section_height'  => get_post_meta( $post->ID, '_ss_section_height', true ) ?: '100',
+        'title_visible'   => get_post_meta( $post->ID, '_ss_title_visible', true ) ?: 'yes',
+    );
     ?>
-    <p>
-        <label for="ss_order"><strong>Display Order</strong></label><br>
-        <input type="number" id="ss_order" name="ss_order" value="<?php echo esc_attr( $order ); ?>" min="0" step="1" style="width:100%;">
-    </p>
+    <style>
+        .ss-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+        .ss-meta-grid .ss-full { grid-column: 1 / -1; }
+        .ss-meta-grid label { font-weight: 600; display: block; margin-bottom: 4px; }
+        .ss-meta-grid input, .ss-meta-grid select { width: 100%; }
+        .ss-meta-grid small { color: #666; }
+        .ss-meta-section { background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 16px; margin-bottom: 16px; }
+        .ss-meta-section h4 { margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid #ddd; }
+    </style>
 
-    <p>
-        <label for="ss_bg_type"><strong>Background Type</strong></label><br>
-        <select id="ss_bg_type" name="ss_bg_type" style="width:100%;">
-            <option value="image" <?php selected( $bg_type, 'image' ); ?>>Featured Image</option>
-            <option value="video" <?php selected( $bg_type, 'video' ); ?>>Video URL</option>
-            <option value="color" <?php selected( $bg_type, 'color' ); ?>>Solid Color</option>
-        </select>
-    </p>
+    <!-- Layout & Order -->
+    <div class="ss-meta-section">
+        <h4>Layout</h4>
+        <div class="ss-meta-grid">
+            <p>
+                <label for="ss_order">Display Order</label>
+                <input type="number" id="ss_order" name="ss_order" value="<?php echo esc_attr( $m['order'] ); ?>" min="0" step="1">
+            </p>
+            <p>
+                <label for="ss_section_height">Section Height (vh)</label>
+                <input type="number" id="ss_section_height" name="ss_section_height" value="<?php echo esc_attr( $m['section_height'] ); ?>" min="50" max="200" step="10">
+                <small>100 = full screen, 150 = extra tall for scroll room</small>
+            </p>
+            <p>
+                <label for="ss_content_position">Content Position</label>
+                <select id="ss_content_position" name="ss_content_position">
+                    <?php foreach ( array( 'top' => 'Top', 'center' => 'Center', 'bottom' => 'Bottom' ) as $val => $label ) : ?>
+                        <option value="<?php echo $val; ?>" <?php selected( $m['content_position'], $val ); ?>><?php echo $label; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="ss_text_align">Text Alignment</label>
+                <select id="ss_text_align" name="ss_text_align">
+                    <?php foreach ( array( 'left' => 'Left', 'center' => 'Center', 'right' => 'Right' ) as $val => $label ) : ?>
+                        <option value="<?php echo $val; ?>" <?php selected( $m['text_align'], $val ); ?>><?php echo $label; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="ss_content_width">Content Max Width (px)</label>
+                <input type="number" id="ss_content_width" name="ss_content_width" value="<?php echo esc_attr( $m['content_width'] ); ?>" min="300" max="1600" step="50">
+            </p>
+            <p>
+                <label for="ss_title_visible">Show Title</label>
+                <select id="ss_title_visible" name="ss_title_visible">
+                    <option value="yes" <?php selected( $m['title_visible'], 'yes' ); ?>>Yes</option>
+                    <option value="no" <?php selected( $m['title_visible'], 'no' ); ?>>No (content only)</option>
+                </select>
+            </p>
+        </div>
+    </div>
 
-    <p id="ss_video_field" style="<?php echo $bg_type !== 'video' ? 'display:none;' : ''; ?>">
-        <label for="ss_bg_video"><strong>Video URL (MP4)</strong></label><br>
-        <input type="url" id="ss_bg_video" name="ss_bg_video" value="<?php echo esc_url( $bg_video ); ?>" style="width:100%;" placeholder="https://example.com/video.mp4">
-    </p>
+    <!-- Background -->
+    <div class="ss-meta-section">
+        <h4>Background</h4>
+        <div class="ss-meta-grid">
+            <p>
+                <label for="ss_bg_type">Background Type</label>
+                <select id="ss_bg_type" name="ss_bg_type">
+                    <option value="image" <?php selected( $m['bg_type'], 'image' ); ?>>Featured Image</option>
+                    <option value="video" <?php selected( $m['bg_type'], 'video' ); ?>>Video (MP4 URL)</option>
+                    <option value="color" <?php selected( $m['bg_type'], 'color' ); ?>>Solid Color</option>
+                </select>
+            </p>
+            <p>
+                <label for="ss_parallax_speed">Parallax Speed (0-1)</label>
+                <input type="number" id="ss_parallax_speed" name="ss_parallax_speed" value="<?php echo esc_attr( $m['parallax_speed'] ); ?>" min="0" max="1" step="0.05">
+                <small>0 = static, 0.3 = subtle, 1 = dramatic</small>
+            </p>
+            <p class="ss-full ss-toggle-bg-video" style="<?php echo $m['bg_type'] !== 'video' ? 'display:none;' : ''; ?>">
+                <label for="ss_bg_video">Background Video URL (MP4)</label>
+                <input type="url" id="ss_bg_video" name="ss_bg_video" value="<?php echo esc_url( $m['bg_video'] ); ?>" placeholder="https://example.com/bg-video.mp4">
+            </p>
+            <p>
+                <label for="ss_overlay_color">Overlay Color</label>
+                <input type="color" id="ss_overlay_color" name="ss_overlay_color" value="<?php echo esc_attr( $m['overlay_color'] ); ?>">
+            </p>
+            <p>
+                <label for="ss_overlay">Overlay Opacity (0-1)</label>
+                <input type="number" id="ss_overlay" name="ss_overlay" value="<?php echo esc_attr( $m['overlay'] ); ?>" min="0" max="1" step="0.05">
+            </p>
+        </div>
+    </div>
 
-    <p>
-        <label for="ss_overlay"><strong>Overlay Opacity (0-1)</strong></label><br>
-        <input type="number" id="ss_overlay" name="ss_overlay" value="<?php echo esc_attr( $overlay ); ?>" min="0" max="1" step="0.05" style="width:100%;">
-    </p>
+    <!-- Inline Video -->
+    <div class="ss-meta-section">
+        <h4>Inline Video (appears within the section content)</h4>
+        <div class="ss-meta-grid">
+            <p class="ss-full">
+                <label for="ss_inline_video">Video Embed URL</label>
+                <input type="url" id="ss_inline_video" name="ss_inline_video" value="<?php echo esc_url( $m['inline_video'] ); ?>" placeholder="https://www.youtube.com/embed/xxxxx or https://player.vimeo.com/video/xxxxx">
+                <small>Paste a YouTube or Vimeo <strong>embed</strong> URL, or an MP4 link. Leave blank for no inline video.</small>
+            </p>
+            <p>
+                <label for="ss_video_width">Video Max Width (px)</label>
+                <input type="number" id="ss_video_width" name="ss_video_width" value="<?php echo esc_attr( $m['video_width'] ); ?>" min="300" max="1400" step="50">
+            </p>
+            <p>
+                <label for="ss_video_autoplay">Video Behavior</label>
+                <select id="ss_video_autoplay" name="ss_video_autoplay">
+                    <option value="on_scroll" <?php selected( $m['video_autoplay'], 'on_scroll' ); ?>>Play when scrolled into view</option>
+                    <option value="click" <?php selected( $m['video_autoplay'], 'click' ); ?>>Click to play</option>
+                    <option value="autoplay" <?php selected( $m['video_autoplay'], 'autoplay' ); ?>>Always autoplay (muted)</option>
+                </select>
+            </p>
+        </div>
+    </div>
 
-    <p>
-        <label for="ss_overlay_color"><strong>Overlay Color</strong></label><br>
-        <input type="color" id="ss_overlay_color" name="ss_overlay_color" value="<?php echo esc_attr( $overlay_color ); ?>" style="width:100%;">
-    </p>
-
-    <p>
-        <label for="ss_animation"><strong>Content Animation</strong></label><br>
-        <select id="ss_animation" name="ss_animation" style="width:100%;">
-            <option value="fade-up" <?php selected( $animation, 'fade-up' ); ?>>Fade Up</option>
-            <option value="fade-down" <?php selected( $animation, 'fade-down' ); ?>>Fade Down</option>
-            <option value="fade-left" <?php selected( $animation, 'fade-left' ); ?>>Fade Left</option>
-            <option value="fade-right" <?php selected( $animation, 'fade-right' ); ?>>Fade Right</option>
-            <option value="zoom-in" <?php selected( $animation, 'zoom-in' ); ?>>Zoom In</option>
-            <option value="blur-in" <?php selected( $animation, 'blur-in' ); ?>>Blur In</option>
-            <option value="none" <?php selected( $animation, 'none' ); ?>>None</option>
-        </select>
-    </p>
-
-    <p>
-        <label for="ss_text_align"><strong>Text Alignment</strong></label><br>
-        <select id="ss_text_align" name="ss_text_align" style="width:100%;">
-            <option value="left" <?php selected( $text_align, 'left' ); ?>>Left</option>
-            <option value="center" <?php selected( $text_align, 'center' ); ?>>Center</option>
-            <option value="right" <?php selected( $text_align, 'right' ); ?>>Right</option>
-        </select>
-    </p>
-
-    <p>
-        <label for="ss_content_width"><strong>Content Max Width (px)</strong></label><br>
-        <input type="number" id="ss_content_width" name="ss_content_width" value="<?php echo esc_attr( $content_width ); ?>" min="300" max="1600" step="50" style="width:100%;">
-    </p>
-
-    <p>
-        <label for="ss_parallax_speed"><strong>Parallax Speed (0-1)</strong></label><br>
-        <input type="number" id="ss_parallax_speed" name="ss_parallax_speed" value="<?php echo esc_attr( $parallax_speed ); ?>" min="0" max="1" step="0.05" style="width:100%;">
-        <small>0 = no parallax, 1 = maximum parallax</small>
-    </p>
+    <!-- Animation -->
+    <div class="ss-meta-section">
+        <h4>Scroll Animation</h4>
+        <div class="ss-meta-grid">
+            <p>
+                <label for="ss_animation">Animation Type</label>
+                <select id="ss_animation" name="ss_animation">
+                    <?php
+                    $anims = array(
+                        'fade-up'    => 'Fade Up',
+                        'fade-down'  => 'Fade Down',
+                        'fade-left'  => 'Slide from Right',
+                        'fade-right' => 'Slide from Left',
+                        'zoom-in'    => 'Zoom In',
+                        'zoom-out'   => 'Zoom Out',
+                        'blur-in'    => 'Blur In',
+                        'clip-up'    => 'Clip Reveal (Up)',
+                        'clip-left'  => 'Clip Reveal (Left)',
+                        'none'       => 'None (instant)',
+                    );
+                    foreach ( $anims as $val => $label ) :
+                    ?>
+                        <option value="<?php echo $val; ?>" <?php selected( $m['animation'], $val ); ?>><?php echo $label; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="ss_anim_easing">Easing</label>
+                <select id="ss_anim_easing" name="ss_anim_easing">
+                    <?php
+                    $easings = array(
+                        'cubic-bezier(0.25, 0.46, 0.45, 0.94)' => 'Ease Out (default)',
+                        'cubic-bezier(0.22, 1, 0.36, 1)'       => 'Ease Out Quint (cinematic)',
+                        'cubic-bezier(0.16, 1, 0.3, 1)'        => 'Ease Out Expo (dramatic)',
+                        'cubic-bezier(0.34, 1.56, 0.64, 1)'    => 'Ease Out Back (bounce)',
+                        'ease-in-out'                           => 'Ease In Out',
+                        'linear'                                => 'Linear',
+                    );
+                    foreach ( $easings as $val => $label ) :
+                    ?>
+                        <option value="<?php echo esc_attr( $val ); ?>" <?php selected( $m['anim_easing'], $val ); ?>><?php echo $label; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p>
+                <label for="ss_anim_duration">Duration (seconds)</label>
+                <input type="number" id="ss_anim_duration" name="ss_anim_duration" value="<?php echo esc_attr( $m['anim_duration'] ); ?>" min="0.2" max="4" step="0.1">
+            </p>
+            <p>
+                <label for="ss_anim_delay">Delay (seconds)</label>
+                <input type="number" id="ss_anim_delay" name="ss_anim_delay" value="<?php echo esc_attr( $m['anim_delay'] ); ?>" min="0" max="3" step="0.1">
+            </p>
+            <p>
+                <label for="ss_anim_stagger">Child Stagger (seconds)</label>
+                <input type="number" id="ss_anim_stagger" name="ss_anim_stagger" value="<?php echo esc_attr( $m['anim_stagger'] ); ?>" min="0" max="1" step="0.05">
+                <small>Delay between title, body, and video appearing</small>
+            </p>
+        </div>
+    </div>
 
     <script>
     jQuery(function($){
         $('#ss_bg_type').on('change', function(){
-            $('#ss_video_field').toggle($(this).val() === 'video');
+            $('.ss-toggle-bg-video').toggle($(this).val() === 'video');
         });
     });
     </script>
     <?php
 }
 
-/**
- * Save meta box data.
- */
 function ss_save_meta( $post_id ) {
     if ( ! isset( $_POST['ss_meta_nonce'] ) || ! wp_verify_nonce( $_POST['ss_meta_nonce'], 'ss_save_meta' ) ) {
         return;
@@ -184,15 +284,25 @@ function ss_save_meta( $post_id ) {
     }
 
     $fields = array(
-        'ss_order'          => '_ss_order',
-        'ss_bg_type'        => '_ss_bg_type',
-        'ss_bg_video'       => '_ss_bg_video',
-        'ss_overlay'        => '_ss_overlay',
-        'ss_overlay_color'  => '_ss_overlay_color',
-        'ss_animation'      => '_ss_animation',
-        'ss_text_align'     => '_ss_text_align',
-        'ss_content_width'  => '_ss_content_width',
-        'ss_parallax_speed' => '_ss_parallax_speed',
+        'ss_order'            => '_ss_order',
+        'ss_bg_type'          => '_ss_bg_type',
+        'ss_bg_video'         => '_ss_bg_video',
+        'ss_overlay'          => '_ss_overlay',
+        'ss_overlay_color'    => '_ss_overlay_color',
+        'ss_animation'        => '_ss_animation',
+        'ss_anim_duration'    => '_ss_anim_duration',
+        'ss_anim_delay'       => '_ss_anim_delay',
+        'ss_anim_stagger'     => '_ss_anim_stagger',
+        'ss_anim_easing'      => '_ss_anim_easing',
+        'ss_text_align'       => '_ss_text_align',
+        'ss_content_width'    => '_ss_content_width',
+        'ss_content_position' => '_ss_content_position',
+        'ss_parallax_speed'   => '_ss_parallax_speed',
+        'ss_inline_video'     => '_ss_inline_video',
+        'ss_video_width'      => '_ss_video_width',
+        'ss_video_autoplay'   => '_ss_video_autoplay',
+        'ss_section_height'   => '_ss_section_height',
+        'ss_title_visible'    => '_ss_title_visible',
     );
 
     foreach ( $fields as $field => $meta_key ) {
@@ -204,10 +314,6 @@ function ss_save_meta( $post_id ) {
 }
 add_action( 'save_post_scroll_section', 'ss_save_meta' );
 
-/**
- * Ensure _ss_order meta exists on every scroll section (default 0).
- * This runs on any save/publish so the query always finds sections.
- */
 function ss_ensure_order_meta( $post_id ) {
     if ( get_post_type( $post_id ) !== 'scroll_section' ) {
         return;
@@ -218,10 +324,10 @@ function ss_ensure_order_meta( $post_id ) {
 }
 add_action( 'save_post', 'ss_ensure_order_meta' );
 
-/**
- * Enqueue frontend assets on all frontend pages.
- * The CSS/JS are lightweight and the JS exits early if #ss-container is absent.
- */
+/* ==========================================================================
+   Frontend Assets
+   ========================================================================== */
+
 function ss_enqueue_assets() {
     wp_enqueue_style(
         'scroll-sections',
@@ -240,164 +346,197 @@ function ss_enqueue_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ss_enqueue_assets' );
 
-/**
- * Query all published scroll sections ordered by the display order meta.
- */
+/* ==========================================================================
+   Query
+   ========================================================================== */
+
 function ss_get_sections() {
-    $args = array(
+    return new WP_Query( array(
         'post_type'      => 'scroll_section',
         'posts_per_page' => -1,
         'post_status'    => 'publish',
-        'orderby'        => array(
-            'meta_value_num' => 'ASC',
-            'date'           => 'ASC',
-        ),
+        'orderby'        => array( 'meta_value_num' => 'ASC', 'date' => 'ASC' ),
         'meta_query'     => array(
             'relation' => 'OR',
-            array(
-                'key'     => '_ss_order',
-                'compare' => 'EXISTS',
-            ),
-            array(
-                'key'     => '_ss_order',
-                'compare' => 'NOT EXISTS',
-            ),
+            array( 'key' => '_ss_order', 'compare' => 'EXISTS' ),
+            array( 'key' => '_ss_order', 'compare' => 'NOT EXISTS' ),
         ),
-    );
-
-    return new WP_Query( $args );
+    ) );
 }
 
-/**
- * Render scroll sections HTML.
- */
+/* ==========================================================================
+   Render
+   ========================================================================== */
+
 function ss_render_sections() {
     $sections = ss_get_sections();
 
     if ( ! $sections->have_posts() ) {
-        return '<p>No scroll sections found. Add sections in the WordPress admin under Scroll Sections.</p>';
+        return '<p style="color:#fff;text-align:center;padding:4rem;">No scroll sections found. Add sections in the WordPress admin under <strong>Scroll Sections</strong>.</p>';
     }
 
-    $output = '<div class="ss-container" id="ss-container">';
+    $output = '<div class="ss-wrapper" id="ss-wrapper">';
+    $output .= '<div class="ss-smooth" id="ss-smooth">';
 
-    // Navigation dots
-    $output .= '<nav class="ss-nav" id="ss-nav" aria-label="Section navigation"><ul>';
+    // Build section HTML
+    $nav_items = array();
     $i = 0;
     while ( $sections->have_posts() ) {
         $sections->the_post();
-        $title = get_the_title();
-        $active = $i === 0 ? ' ss-nav-active' : '';
-        $output .= '<li><button class="ss-nav-dot' . $active . '" data-index="' . $i . '" aria-label="' . esc_attr( $title ) . '"><span class="ss-nav-tooltip">' . esc_html( $title ) . '</span></button></li>';
-        $i++;
-    }
-    $output .= '</ul></nav>';
+        $pid = get_the_ID();
 
-    // Sections
-    $sections->rewind_posts();
-    $i = 0;
-    while ( $sections->have_posts() ) {
-        $sections->the_post();
-        $post_id = get_the_ID();
+        // Gather meta
+        $bg_type         = get_post_meta( $pid, '_ss_bg_type', true ) ?: 'image';
+        $bg_video        = get_post_meta( $pid, '_ss_bg_video', true );
+        $overlay         = get_post_meta( $pid, '_ss_overlay', true ) ?: '0.4';
+        $overlay_color   = get_post_meta( $pid, '_ss_overlay_color', true ) ?: '#000000';
+        $animation       = get_post_meta( $pid, '_ss_animation', true ) ?: 'fade-up';
+        $anim_duration   = get_post_meta( $pid, '_ss_anim_duration', true ) ?: '1.2';
+        $anim_delay      = get_post_meta( $pid, '_ss_anim_delay', true ) ?: '0';
+        $anim_stagger    = get_post_meta( $pid, '_ss_anim_stagger', true ) ?: '0.15';
+        $anim_easing     = get_post_meta( $pid, '_ss_anim_easing', true ) ?: 'cubic-bezier(0.25,0.46,0.45,0.94)';
+        $text_align      = get_post_meta( $pid, '_ss_text_align', true ) ?: 'center';
+        $content_width   = get_post_meta( $pid, '_ss_content_width', true ) ?: '900';
+        $content_pos     = get_post_meta( $pid, '_ss_content_position', true ) ?: 'center';
+        $parallax_speed  = get_post_meta( $pid, '_ss_parallax_speed', true ) ?: '0.3';
+        $inline_video    = get_post_meta( $pid, '_ss_inline_video', true );
+        $video_width     = get_post_meta( $pid, '_ss_video_width', true ) ?: '800';
+        $video_autoplay  = get_post_meta( $pid, '_ss_video_autoplay', true ) ?: 'on_scroll';
+        $section_height  = get_post_meta( $pid, '_ss_section_height', true ) ?: '100';
+        $title_visible   = get_post_meta( $pid, '_ss_title_visible', true ) ?: 'yes';
 
-        $bg_type        = get_post_meta( $post_id, '_ss_bg_type', true ) ?: 'image';
-        $bg_video       = get_post_meta( $post_id, '_ss_bg_video', true );
-        $overlay        = get_post_meta( $post_id, '_ss_overlay', true ) ?: '0.5';
-        $overlay_color  = get_post_meta( $post_id, '_ss_overlay_color', true ) ?: '#000000';
-        $animation      = get_post_meta( $post_id, '_ss_animation', true ) ?: 'fade-up';
-        $text_align     = get_post_meta( $post_id, '_ss_text_align', true ) ?: 'center';
-        $content_width  = get_post_meta( $post_id, '_ss_content_width', true ) ?: '800';
-        $parallax_speed = get_post_meta( $post_id, '_ss_parallax_speed', true ) ?: '0.3';
-
-        $bg_image_url = '';
-        if ( $bg_type === 'image' && has_post_thumbnail( $post_id ) ) {
-            $bg_image_url = get_the_post_thumbnail_url( $post_id, 'full' );
-        }
-
-        // Build section data attributes
-        $data_attrs = sprintf(
-            'data-animation="%s" data-parallax-speed="%s" data-index="%d"',
-            esc_attr( $animation ),
-            esc_attr( $parallax_speed ),
-            $i
-        );
-
-        // Overlay style
+        $title     = get_the_title();
+        $content   = wp_kses_post( apply_filters( 'the_content', get_the_content() ) );
+        $bg_img    = ( $bg_type === 'image' && has_post_thumbnail( $pid ) ) ? get_the_post_thumbnail_url( $pid, 'full' ) : '';
         $overlay_rgba = ss_hex_to_rgba( $overlay_color, $overlay );
 
-        $output .= '<section class="ss-section" ' . $data_attrs . '>';
+        $nav_items[] = $title;
 
-        // Background layer
+        // Align class
+        $align_class = 'ss-pos-' . $content_pos;
+
+        // Data attributes for JS
+        $data = sprintf(
+            'data-animation="%s" data-duration="%s" data-delay="%s" data-stagger="%s" data-easing="%s" data-parallax="%s" data-index="%d" data-video-autoplay="%s"',
+            esc_attr( $animation ),
+            esc_attr( $anim_duration ),
+            esc_attr( $anim_delay ),
+            esc_attr( $anim_stagger ),
+            esc_attr( $anim_easing ),
+            esc_attr( $parallax_speed ),
+            $i,
+            esc_attr( $video_autoplay )
+        );
+
+        $output .= '<section class="ss-section ' . $align_class . '" ' . $data . ' style="min-height:' . intval( $section_height ) . 'vh;">';
+
+        // Background
         if ( $bg_type === 'video' && $bg_video ) {
-            $output .= '<div class="ss-bg ss-bg-video">';
-            $output .= '<video autoplay muted loop playsinline><source src="' . esc_url( $bg_video ) . '" type="video/mp4"></video>';
-            $output .= '</div>';
-        } elseif ( $bg_type === 'image' && $bg_image_url ) {
-            $output .= '<div class="ss-bg ss-bg-image" style="background-image:url(' . esc_url( $bg_image_url ) . ');"></div>';
+            $output .= '<div class="ss-bg ss-bg-video"><video autoplay muted loop playsinline><source src="' . esc_url( $bg_video ) . '" type="video/mp4"></video></div>';
+        } elseif ( $bg_type === 'image' && $bg_img ) {
+            $output .= '<div class="ss-bg ss-bg-image" style="background-image:url(' . esc_url( $bg_img ) . ');"></div>';
         } else {
             $output .= '<div class="ss-bg ss-bg-color" style="background-color:' . esc_attr( $overlay_color ) . ';"></div>';
         }
 
         // Overlay
-        $output .= '<div class="ss-overlay" style="background-color:' . esc_attr( $overlay_rgba ) . ';"></div>';
+        $output .= '<div class="ss-overlay" style="background:' . esc_attr( $overlay_rgba ) . ';"></div>';
 
-        // Content
-        $output .= '<div class="ss-content ss-anim" style="text-align:' . esc_attr( $text_align ) . ';max-width:' . intval( $content_width ) . 'px;">';
-        $output .= '<h2 class="ss-title">' . esc_html( get_the_title() ) . '</h2>';
-        $output .= '<div class="ss-body">' . wp_kses_post( apply_filters( 'the_content', get_the_content() ) ) . '</div>';
-        $output .= '</div>';
+        // Content container
+        $output .= '<div class="ss-content" style="text-align:' . esc_attr( $text_align ) . ';max-width:' . intval( $content_width ) . 'px;">';
 
+        // Title (stagger child 1)
+        if ( $title_visible === 'yes' ) {
+            $output .= '<h2 class="ss-title ss-stagger">' . esc_html( $title ) . '</h2>';
+        }
+
+        // Body text (stagger child 2)
+        if ( trim( $content ) ) {
+            $output .= '<div class="ss-body ss-stagger">' . $content . '</div>';
+        }
+
+        // Inline video (stagger child 3)
+        if ( $inline_video ) {
+            $output .= '<div class="ss-inline-video ss-stagger" style="max-width:' . intval( $video_width ) . 'px;">';
+            if ( preg_match( '/\.(mp4|webm)$/i', $inline_video ) ) {
+                // Direct MP4/WebM
+                $output .= '<video class="ss-video-player" ' . ( $video_autoplay === 'autoplay' ? 'autoplay muted' : '' ) . ' loop playsinline controls><source src="' . esc_url( $inline_video ) . '" type="video/mp4"></video>';
+            } else {
+                // Embed (YouTube / Vimeo iframe)
+                $allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+                $src = esc_url( $inline_video );
+                // Add autoplay param if needed
+                if ( $video_autoplay === 'autoplay' && strpos( $src, 'autoplay' ) === false ) {
+                    $src .= ( strpos( $src, '?' ) !== false ? '&' : '?' ) . 'autoplay=1&mute=1';
+                }
+                $output .= '<div class="ss-video-embed"><iframe src="' . $src . '" frameborder="0" allow="' . $allow . '" allowfullscreen loading="lazy"></iframe></div>';
+            }
+            $output .= '</div>';
+        }
+
+        $output .= '</div>'; // .ss-content
         $output .= '</section>';
         $i++;
     }
-
     wp_reset_postdata();
 
-    $output .= '</div>'; // .ss-container
+    $output .= '</div>'; // .ss-smooth
+
+    // Navigation dots
+    $output .= '<nav class="ss-nav" id="ss-nav" aria-label="Section navigation"><ul>';
+    foreach ( $nav_items as $idx => $nav_title ) {
+        $active = $idx === 0 ? ' ss-nav-active' : '';
+        $output .= '<li><button class="ss-nav-dot' . $active . '" data-index="' . $idx . '" aria-label="' . esc_attr( $nav_title ) . '"><span class="ss-nav-tooltip">' . esc_html( $nav_title ) . '</span></button></li>';
+    }
+    $output .= '</ul></nav>';
+
+    // Progress bar
+    $output .= '<div class="ss-progress" id="ss-progress"></div>';
+
+    $output .= '</div>'; // .ss-wrapper
 
     return $output;
 }
 
-/**
- * Shortcode: [scroll_sections]
- */
 function ss_shortcode( $atts ) {
     return ss_render_sections();
 }
 add_shortcode( 'scroll_sections', 'ss_shortcode' );
 
-/**
- * Convert hex color to rgba string.
- */
+/* ==========================================================================
+   Helpers
+   ========================================================================== */
+
 function ss_hex_to_rgba( $hex, $alpha ) {
     $hex = ltrim( $hex, '#' );
     if ( strlen( $hex ) === 3 ) {
         $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
     }
-    $r = hexdec( substr( $hex, 0, 2 ) );
-    $g = hexdec( substr( $hex, 2, 2 ) );
-    $b = hexdec( substr( $hex, 4, 2 ) );
-    return sprintf( 'rgba(%d,%d,%d,%s)', $r, $g, $b, floatval( $alpha ) );
+    return sprintf( 'rgba(%d,%d,%d,%s)',
+        hexdec( substr( $hex, 0, 2 ) ),
+        hexdec( substr( $hex, 2, 2 ) ),
+        hexdec( substr( $hex, 4, 2 ) ),
+        floatval( $alpha )
+    );
 }
 
-/**
- * Register the page template.
- */
+/* ==========================================================================
+   Page Template
+   ========================================================================== */
+
 function ss_register_template( $templates ) {
     $templates['templates/scroll-sections-template.php'] = 'Scroll Sections (Full Screen)';
     return $templates;
 }
 add_filter( 'theme_page_templates', 'ss_register_template' );
 
-/**
- * Load the page template from the plugin.
- */
 function ss_load_template( $template ) {
     if ( is_page() ) {
-        $page_template = get_page_template_slug();
-        if ( $page_template === 'templates/scroll-sections-template.php' ) {
-            $plugin_template = SCROLL_SECTIONS_DIR . 'templates/scroll-sections-template.php';
-            if ( file_exists( $plugin_template ) ) {
-                return $plugin_template;
+        $slug = get_page_template_slug();
+        if ( $slug === 'templates/scroll-sections-template.php' ) {
+            $file = SCROLL_SECTIONS_DIR . 'templates/scroll-sections-template.php';
+            if ( file_exists( $file ) ) {
+                return $file;
             }
         }
     }
@@ -405,9 +544,10 @@ function ss_load_template( $template ) {
 }
 add_filter( 'template_include', 'ss_load_template' );
 
-/**
- * Add admin columns for display order.
- */
+/* ==========================================================================
+   Admin Columns
+   ========================================================================== */
+
 function ss_admin_columns( $columns ) {
     $new = array();
     foreach ( $columns as $key => $val ) {
@@ -416,6 +556,7 @@ function ss_admin_columns( $columns ) {
             $new['ss_order']     = 'Order';
             $new['ss_animation'] = 'Animation';
             $new['ss_bg_type']   = 'Background';
+            $new['ss_video']     = 'Inline Video';
         }
     }
     return $new;
@@ -432,6 +573,10 @@ function ss_admin_column_content( $column, $post_id ) {
             break;
         case 'ss_bg_type':
             echo esc_html( ucfirst( get_post_meta( $post_id, '_ss_bg_type', true ) ?: 'image' ) );
+            break;
+        case 'ss_video':
+            $v = get_post_meta( $post_id, '_ss_inline_video', true );
+            echo $v ? '<span style="color:green;">Yes</span>' : '—';
             break;
     }
 }
