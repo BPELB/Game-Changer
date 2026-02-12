@@ -422,7 +422,7 @@ function ss_render_sections() {
             $i, esc_attr( $vid_auto )
         );
 
-        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' style="min-height:' . $sec_height . 'vh">';
+        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' style="min-height:100vh;height:' . $sec_height . 'vh;width:100%">';
 
         // BG
         if ( $bg_type === 'video' && $bg_video ) {

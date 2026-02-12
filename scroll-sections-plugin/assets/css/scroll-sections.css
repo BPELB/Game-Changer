@@ -3,10 +3,11 @@
    Cinematic scroll sections — preserves theme header & footer.
    ========================================================================== */
 
-/* ---------- Wrapper (inline flow — NOT fixed) ---------- */
+/* ---------- Wrapper (inline flow — NOT fixed, full width) ---------- */
 .ss-wrap {
     position: relative;
-    width: 100%;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
     background: #000;
     overflow: hidden;
 }
@@ -15,6 +16,7 @@
 .ss-sec {
     position: relative;
     width: 100%;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     overflow: hidden;
