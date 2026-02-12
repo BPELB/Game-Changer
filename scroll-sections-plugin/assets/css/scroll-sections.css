@@ -1,41 +1,30 @@
 /* ==========================================================================
-   Scroll Sections v2.1 — Cinematic Inline Scroll
-   Works within any WordPress theme — preserves header/footer.
+   Scroll Sections v4.0.0
+   Cinematic scroll sections — preserves theme header & footer.
    ========================================================================== */
 
-/* ---------- Wrapper (flows inline) ---------- */
-
-.ss-wrapper {
+/* ---------- Wrapper (inline flow — NOT fixed) ---------- */
+.ss-wrap {
     position: relative;
     width: 100%;
     background: #000;
-}
-
-/* .ss-smooth is just a structural wrapper now — no transforms */
-.ss-smooth {
-    position: relative;
-}
-
-/* ---------- Section ---------- */
-
-.ss-section {
-    position: relative;
-    width: 100%;
-    display: flex;
     overflow: hidden;
 }
 
-/* Content position variants */
-.ss-section.ss-pos-top    { align-items: flex-start; padding-top: 10vh; }
-.ss-section.ss-pos-center { align-items: center; }
-.ss-section.ss-pos-bottom { align-items: flex-end; padding-bottom: 10vh; }
-
-.ss-section {
+/* ---------- Section ---------- */
+.ss-sec {
+    position: relative;
+    width: 100%;
+    display: flex;
     justify-content: center;
+    overflow: hidden;
 }
 
-/* ---------- Background ---------- */
+.ss-sec.ss-pos-top    { align-items: flex-start; padding-top: 10vh; }
+.ss-sec.ss-pos-center { align-items: center; }
+.ss-sec.ss-pos-bottom { align-items: flex-end; padding-bottom: 10vh; }
 
+/* ---------- Background ---------- */
 .ss-bg {
     position: absolute;
     inset: -15%;
@@ -43,27 +32,26 @@
     will-change: transform;
 }
 
-.ss-bg-image {
+.ss-bg-img {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
-.ss-bg-video {
+.ss-bg-vid {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.ss-bg-video video {
+.ss-bg-vid video {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
 /* ---------- Overlay ---------- */
-
-.ss-overlay {
+.ss-over {
     position: absolute;
     inset: 0;
     z-index: 1;
@@ -71,19 +59,17 @@
 }
 
 /* ---------- Content ---------- */
-
-.ss-content {
+.ss-cnt {
     position: relative;
     z-index: 2;
     margin: 0 auto;
     padding: 3rem 2rem;
-    color: #ffffff;
+    color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* ---------- Title ---------- */
-
-.ss-title {
+.ss-ttl {
     font-size: clamp(2.2rem, 5vw, 5.5rem);
     font-weight: 700;
     letter-spacing: 0.03em;
@@ -93,7 +79,6 @@
 }
 
 /* ---------- Body ---------- */
-
 .ss-body {
     font-size: clamp(1rem, 1.4vw, 1.3rem);
     line-height: 1.75;
@@ -104,21 +89,23 @@
 .ss-body a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 .ss-body a:hover { opacity: 0.7; }
 
-/* ---------- Video Grid ---------- */
+/* ==========================================================================
+   Video Grid
+   ========================================================================== */
 
-.ss-video-grid {
+.ss-vgrid {
     margin: 2rem auto 0;
     width: 100%;
 }
 
-/* All grid/featured layouts: force items to fill their cell */
-.ss-video-grid .ss-video-item {
+/* Force items to fill grid cells */
+.ss-vgrid .ss-vitem {
     max-width: 100% !important;
     width: 100%;
 }
 
-/* Stack layout (default): single column, centered */
-.ss-layout-stack {
+/* Stack (default) */
+.ss-vl-stack {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -126,52 +113,55 @@
 }
 
 /* 2-column grid */
-.ss-layout-grid-2 {
+.ss-vl-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 }
 
 /* 3-column grid */
-.ss-layout-grid-3 {
+.ss-vl-grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1.5rem;
 }
 
-/* Featured layout: first video full width, rest in a flexible row */
-.ss-layout-featured {
+/* Featured: first video full width, rest in a flex row */
+.ss-vl-featured {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
 }
-.ss-layout-featured .ss-video-item:first-child {
+
+.ss-vl-featured .ss-vitem:first-child {
     flex: 0 0 100%;
 }
-.ss-layout-featured .ss-video-item:not(:first-child) {
+
+.ss-vl-featured .ss-vitem:not(:first-child) {
     flex: 1 1 280px;
 }
 
 /* Video item */
-.ss-video-item {
+.ss-vitem {
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
 
-.ss-video-item video {
+.ss-vitem video {
     display: block;
     width: 100%;
     border: 0;
 }
 
-.ss-video-embed {
+/* 16:9 responsive embed wrapper */
+.ss-vembed {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 */
+    padding-bottom: 56.25%;
     height: 0;
 }
 
-.ss-video-embed iframe {
+.ss-vembed iframe {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -179,7 +169,7 @@
     border: 0;
 }
 
-.ss-video-label {
+.ss-vlabel {
     margin: 0.5rem 0 0;
     font-size: 0.85rem;
     opacity: 0.7;
@@ -187,47 +177,39 @@
     color: #fff;
 }
 
-/* Responsive: collapse grids to single column on mobile */
-@media (max-width: 768px) {
-    .ss-layout-grid-2,
-    .ss-layout-grid-3 {
-        grid-template-columns: 1fr;
-    }
-    .ss-layout-featured .ss-video-item:not(:first-child) {
-        flex: 0 0 100%;
-    }
-}
+/* ==========================================================================
+   Stagger Animations
+   ========================================================================== */
 
-/* ---------- Stagger Animations ---------- */
-
-.ss-stagger {
+/* Hidden by default — JS applies transition inline */
+.ss-child {
     opacity: 0;
     will-change: transform, opacity, filter;
-    /* transition set dynamically by JS via inline styles */
 }
 
-/* Visible state */
-.ss-section.ss-in-view .ss-stagger {
+/* Revealed state */
+.ss-sec.ss-visible .ss-child {
     opacity: 1;
     transform: none !important;
     filter: none !important;
     clip-path: none !important;
 }
 
-/* --- Starting transforms per animation type --- */
+/* Starting transforms per animation type */
+[data-anim="fade-up"]    .ss-child { transform: translateY(80px); }
+[data-anim="fade-down"]  .ss-child { transform: translateY(-80px); }
+[data-anim="fade-left"]  .ss-child { transform: translateX(80px); }
+[data-anim="fade-right"] .ss-child { transform: translateX(-80px); }
+[data-anim="zoom-in"]    .ss-child { transform: scale(0.8); }
+[data-anim="zoom-out"]   .ss-child { transform: scale(1.15); }
+[data-anim="blur-in"]    .ss-child { filter: blur(16px); transform: scale(1.03); }
+[data-anim="clip-up"]    .ss-child { clip-path: inset(100% 0 0 0); }
+[data-anim="clip-left"]  .ss-child { clip-path: inset(0 100% 0 0); }
+[data-anim="none"]       .ss-child { opacity: 1; transform: none; }
 
-[data-animation="fade-up"] .ss-stagger    { transform: translateY(80px); }
-[data-animation="fade-down"] .ss-stagger  { transform: translateY(-80px); }
-[data-animation="fade-left"] .ss-stagger  { transform: translateX(80px); }
-[data-animation="fade-right"] .ss-stagger { transform: translateX(-80px); }
-[data-animation="zoom-in"] .ss-stagger    { transform: scale(0.8); }
-[data-animation="zoom-out"] .ss-stagger   { transform: scale(1.15); }
-[data-animation="blur-in"] .ss-stagger    { filter: blur(16px); transform: scale(1.03); }
-[data-animation="clip-up"] .ss-stagger    { clip-path: inset(100% 0 0 0); }
-[data-animation="clip-left"] .ss-stagger  { clip-path: inset(0 100% 0 0); }
-[data-animation="none"] .ss-stagger       { opacity: 1; transform: none; }
-
-/* ---------- Navigation Dots ---------- */
+/* ==========================================================================
+   Navigation Dots
+   ========================================================================== */
 
 .ss-nav {
     position: fixed;
@@ -235,13 +217,12 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 10001;
-    /* Hidden by default — JS shows it when wrapper is on-screen */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
 }
 
-.ss-nav.ss-nav-visible {
+.ss-nav.ss-nav-show {
     opacity: 1;
     pointer-events: auto;
 }
@@ -255,12 +236,12 @@
     gap: 14px;
 }
 
-.ss-nav-dot {
+.ss-dot {
     display: block;
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.5);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     background: transparent;
     cursor: pointer;
     padding: 0;
@@ -268,22 +249,22 @@
     transition: background 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
 }
 
-.ss-nav-dot:hover {
+.ss-dot:hover {
     border-color: #fff;
     transform: scale(1.4);
 }
 
-.ss-nav-dot.ss-nav-active {
+.ss-dot.ss-dot-on {
     background: #fff;
     border-color: #fff;
 }
 
-.ss-nav-tooltip {
+.ss-tip {
     position: absolute;
     right: 24px;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0,0,0,0.85);
+    background: rgba(0, 0, 0, 0.85);
     color: #fff;
     padding: 5px 14px;
     border-radius: 4px;
@@ -294,56 +275,67 @@
     transition: opacity 0.25s ease;
 }
 
-.ss-nav-dot:hover .ss-nav-tooltip { opacity: 1; }
+.ss-dot:hover .ss-tip { opacity: 1; }
 
-/* ---------- Progress Bar ---------- */
+/* ==========================================================================
+   Progress Bar
+   ========================================================================== */
 
-.ss-progress {
+.ss-prog {
     position: fixed;
     top: 0;
     left: 0;
     height: 3px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
     z-index: 10001;
     width: 0%;
     will-change: width;
-    transition: width 0.1s linear;
-    /* Hidden by default — shown when wrapper is on-screen */
     opacity: 0;
     transition: width 0.1s linear, opacity 0.3s ease;
 }
 
-.ss-progress.ss-progress-visible {
+.ss-prog.ss-prog-show {
     opacity: 1;
 }
 
-/* ---------- Responsive ---------- */
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
 
 @media (max-width: 768px) {
     .ss-nav { right: 0.5rem; }
-    .ss-nav-dot { width: 9px; height: 9px; }
-    .ss-nav-tooltip { display: none; }
+    .ss-dot { width: 9px; height: 9px; }
+    .ss-tip { display: none; }
 
-    .ss-content { padding: 2rem 1.25rem; }
+    .ss-cnt { padding: 2rem 1.25rem; }
     .ss-bg { inset: -5%; }
 
-    [data-animation="fade-up"] .ss-stagger    { transform: translateY(40px); }
-    [data-animation="fade-down"] .ss-stagger  { transform: translateY(-40px); }
-    [data-animation="fade-left"] .ss-stagger  { transform: translateX(40px); }
-    [data-animation="fade-right"] .ss-stagger { transform: translateX(-40px); }
+    .ss-vl-grid-2,
+    .ss-vl-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .ss-vl-featured .ss-vitem:not(:first-child) {
+        flex: 0 0 100%;
+    }
+
+    [data-anim="fade-up"]    .ss-child { transform: translateY(40px); }
+    [data-anim="fade-down"]  .ss-child { transform: translateY(-40px); }
+    [data-anim="fade-left"]  .ss-child { transform: translateX(40px); }
+    [data-anim="fade-right"] .ss-child { transform: translateX(-40px); }
 }
 
-/* ---------- Reduced Motion ---------- */
+/* ==========================================================================
+   Reduced Motion
+   ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-    .ss-stagger {
+    .ss-child {
         transition: none !important;
         opacity: 1 !important;
         transform: none !important;
         filter: none !important;
         clip-path: none !important;
     }
-    .ss-bg {
-        inset: 0;
-    }
+    .ss-bg { inset: 0; }
 }
