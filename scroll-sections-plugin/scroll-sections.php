@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Scroll Sections
  * Description: Cinematic full-screen sections with smooth inertia scrolling, parallax backgrounds, inline video embeds, and scroll-triggered animations. Inspired by ericprydz.com. Use the [scroll_sections] shortcode or the included page template.
- * Version: 2.0.0
+ * Version: 3.0.0
  * Author: Brandon
  * Text Domain: scroll-sections
  */
@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'SCROLL_SECTIONS_VERSION', '2.0.0' );
+define( 'SCROLL_SECTIONS_VERSION', '3.0.0' );
 define( 'SCROLL_SECTIONS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCROLL_SECTIONS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -404,18 +404,24 @@ add_action( 'save_post', 'ss_ensure_order_meta' );
    ========================================================================== */
 
 function ss_enqueue_assets() {
+    // Append file modification time to guarantee the browser loads fresh files
+    $css_file = SCROLL_SECTIONS_DIR . 'assets/css/scroll-sections.css';
+    $js_file  = SCROLL_SECTIONS_DIR . 'assets/js/scroll-sections.js';
+    $css_ver  = SCROLL_SECTIONS_VERSION . '.' . ( file_exists( $css_file ) ? filemtime( $css_file ) : '' );
+    $js_ver   = SCROLL_SECTIONS_VERSION . '.' . ( file_exists( $js_file ) ? filemtime( $js_file ) : '' );
+
     wp_enqueue_style(
         'scroll-sections',
         SCROLL_SECTIONS_URL . 'assets/css/scroll-sections.css',
         array(),
-        SCROLL_SECTIONS_VERSION
+        $css_ver
     );
 
     wp_enqueue_script(
         'scroll-sections',
         SCROLL_SECTIONS_URL . 'assets/js/scroll-sections.js',
         array(),
-        SCROLL_SECTIONS_VERSION,
+        $js_ver,
         true
     );
 }
