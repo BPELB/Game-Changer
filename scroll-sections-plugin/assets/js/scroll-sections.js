@@ -16,6 +16,7 @@
     /* ---- State ---- */
     var wrap, secs, nav, dots, prog;
     var pxTargets = [];      // { el, section, speed, cur, dest }
+    var depthEls  = [];      // { el, section, depth, startZ, curZ, destZ, curScale, destScale }
     var rafId     = null;
     var ticking   = false;
 
@@ -92,6 +93,21 @@
                 var speed = parseFloat(sec.getAttribute('data-parallax') || '0.3');
                 pxTargets.push({ el: bg, section: sec, speed: speed, cur: 0, dest: 0 });
             }
+
+            // Build 3D depth targets
+            sec.querySelectorAll('.ss-3d').forEach(function (el3d) {
+                var depth = parseFloat(el3d.getAttribute('data-depth') || '0.5');
+                depthEls.push({
+                    el: el3d,
+                    section: sec,
+                    depth: depth,
+                    startZ: -300 * depth,   // starts far away
+                    curZ: -300 * depth,
+                    destZ: -300 * depth,
+                    curScale: 1,
+                    destScale: 1
+                });
+            });
         });
 
         // Reduced motion: reveal everything immediately
@@ -144,6 +160,7 @@
 
         doReveals(scrollY, viewH);
         doParallaxTargets(scrollY, viewH);
+        doDepthTargets(scrollY, viewH);
         doNav(scrollY, viewH);
         doProgress(scrollY, viewH);
         doVisibility(scrollY, viewH);
@@ -196,7 +213,52 @@
             if (Math.abs(p.dest - p.cur) < 0.1) p.cur = p.dest;
             p.el.style.transform = 'translate3d(0,' + p.cur + 'px,0)';
         });
+
+        // Animate 3D depth elements
+        depthLerp();
+
         rafId = requestAnimationFrame(parallaxLoop);
+    }
+
+    /* ==================================================================
+       3D Depth — elements fly toward the user as you scroll
+       ================================================================== */
+
+    function doDepthTargets(scrollY, viewH) {
+        depthEls.forEach(function (d) {
+            var rect   = d.section.getBoundingClientRect();
+            var secTop = scrollY + rect.top;
+            var secH   = rect.height || viewH;
+
+            // progress: 0 = section just entering bottom, 1 = section fully scrolled past
+            var raw = (scrollY + viewH - secTop) / (secH + viewH);
+            var progress = Math.max(0, Math.min(1, raw));
+
+            // Map progress to Z: starts far away (negative Z), ends at 0 or slightly past
+            var maxZ = 400 * d.depth;  // how far toward the user it comes
+            d.destZ = d.startZ + (maxZ - d.startZ) * progress;
+
+            // Slight scale increase as it comes closer
+            d.destScale = 1 + (0.3 * d.depth * progress);
+        });
+    }
+
+    function depthLerp() {
+        depthEls.forEach(function (d) {
+            d.curZ += (d.destZ - d.curZ) * LERP;
+            d.curScale += (d.destScale - d.curScale) * LERP;
+
+            if (Math.abs(d.destZ - d.curZ) < 0.1) d.curZ = d.destZ;
+            if (Math.abs(d.destScale - d.curScale) < 0.001) d.curScale = d.destScale;
+
+            d.el.style.transform =
+                'translateZ(' + d.curZ + 'px) ' +
+                'scale(' + d.curScale.toFixed(3) + ')';
+
+            // Fade in as it approaches
+            var opacity = Math.max(0, Math.min(1, (d.curZ - d.startZ) / (-d.startZ + 100)));
+            d.el.style.opacity = opacity.toFixed(3);
+        });
     }
 
     /* ==================================================================

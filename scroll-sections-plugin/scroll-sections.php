@@ -239,6 +239,54 @@ function ss_render_meta_box( $post ) {
         </div>
     </div>
 
+    <!-- 3D Floating Elements -->
+    <?php
+    $els3d_raw = get_post_meta( $post->ID, '_ss_3d_elements', true );
+    $els3d = $els3d_raw ? json_decode( $els3d_raw, true ) : array();
+    if ( ! is_array( $els3d ) ) $els3d = array();
+    ?>
+    <style>
+        .ss-3d-row{display:flex;gap:6px;align-items:flex-end;margin-bottom:8px;padding:8px;background:#fff;border:1px solid #ddd;border-radius:4px;flex-wrap:wrap}
+        .ss-3d-row>div{flex:1;min-width:70px} .ss-3d-row>div.ss-3d-wide{flex:2;min-width:140px}
+        .ss-3d-row input,.ss-3d-row select{width:100%} .ss-3d-row label{font-weight:600;display:block;margin-bottom:3px;font-size:11px}
+        .ss-3d-del{background:#dc3545;color:#fff;border:none;padding:5px 8px;border-radius:3px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+    </style>
+    <div class="ss-box">
+        <h4>3D Floating Elements <small style="font-weight:normal;color:#666">— objects that fly toward the viewer as you scroll</small></h4>
+        <div id="ss-3d-list">
+            <?php foreach ( $els3d as $ei => $e ) : ?>
+            <div class="ss-3d-row">
+                <div><label>Type</label>
+                    <select name="ss_3d[<?php echo $ei; ?>][type]">
+                        <option value="text" <?php selected( ($e['type'] ?? 'text'), 'text' ); ?>>Text</option>
+                        <option value="image" <?php selected( ($e['type'] ?? ''), 'image' ); ?>>Image</option>
+                        <option value="circle" <?php selected( ($e['type'] ?? ''), 'circle' ); ?>>Circle</option>
+                        <option value="square" <?php selected( ($e['type'] ?? ''), 'square' ); ?>>Square</option>
+                        <option value="ring" <?php selected( ($e['type'] ?? ''), 'ring' ); ?>>Ring</option>
+                        <option value="line" <?php selected( ($e['type'] ?? ''), 'line' ); ?>>Line</option>
+                    </select></div>
+                <div class="ss-3d-wide"><label>Content (text or image URL)</label>
+                    <input type="text" name="ss_3d[<?php echo $ei; ?>][content]" value="<?php echo esc_attr( $e['content'] ?? '' ); ?>" placeholder="Hello World or https://..."></div>
+                <div><label>Depth (0-1)</label>
+                    <input type="number" name="ss_3d[<?php echo $ei; ?>][depth]" value="<?php echo esc_attr( $e['depth'] ?? '0.5' ); ?>" min="0.1" max="1" step="0.1"></div>
+                <div><label>X (%)</label>
+                    <input type="number" name="ss_3d[<?php echo $ei; ?>][x]" value="<?php echo esc_attr( $e['x'] ?? '50' ); ?>" min="0" max="100" step="1"></div>
+                <div><label>Y (%)</label>
+                    <input type="number" name="ss_3d[<?php echo $ei; ?>][y]" value="<?php echo esc_attr( $e['y'] ?? '50' ); ?>" min="0" max="100" step="1"></div>
+                <div><label>Size (px)</label>
+                    <input type="number" name="ss_3d[<?php echo $ei; ?>][size]" value="<?php echo esc_attr( $e['size'] ?? '60' ); ?>" min="10" max="600" step="10"></div>
+                <div><label>Color</label>
+                    <input type="color" name="ss_3d[<?php echo $ei; ?>][color]" value="<?php echo esc_attr( $e['color'] ?? '#ffffff' ); ?>"></div>
+                <div><label>Opacity</label>
+                    <input type="number" name="ss_3d[<?php echo $ei; ?>][opacity]" value="<?php echo esc_attr( $e['opacity'] ?? '0.3' ); ?>" min="0.05" max="1" step="0.05"></div>
+                <button type="button" class="ss-3d-del">X</button>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" class="button" id="ss-3d-add">+ Add 3D Element</button>
+        <p><small>Place floating objects (text, images, shapes) that move toward the viewer in 3D as users scroll. Higher depth = faster/more dramatic movement.</small></p>
+    </div>
+
     <script>
     jQuery(function($){
         $('#ss_bg_type').on('change',function(){ $('.ss-bgv').toggle(this.value==='video'); });
@@ -254,6 +302,25 @@ function ss_render_meta_box( $post ) {
             vi++;
         });
         $('#ss-vlist').on('click','.ss-vdel',function(){ $(this).closest('.ss-vrow').remove(); });
+
+        // 3D elements repeater
+        var ei=<?php echo max(count($els3d),0); ?>;
+        $('#ss-3d-add').on('click',function(){
+            $('#ss-3d-list').append(
+                '<div class="ss-3d-row">'+
+                '<div><label>Type</label><select name="ss_3d['+ei+'][type]"><option value="text">Text</option><option value="image">Image</option><option value="circle">Circle</option><option value="square">Square</option><option value="ring">Ring</option><option value="line">Line</option></select></div>'+
+                '<div class="ss-3d-wide"><label>Content</label><input type="text" name="ss_3d['+ei+'][content]" placeholder="Text or image URL"></div>'+
+                '<div><label>Depth</label><input type="number" name="ss_3d['+ei+'][depth]" value="0.5" min="0.1" max="1" step="0.1"></div>'+
+                '<div><label>X %</label><input type="number" name="ss_3d['+ei+'][x]" value="50" min="0" max="100"></div>'+
+                '<div><label>Y %</label><input type="number" name="ss_3d['+ei+'][y]" value="50" min="0" max="100"></div>'+
+                '<div><label>Size</label><input type="number" name="ss_3d['+ei+'][size]" value="60" min="10" max="600" step="10"></div>'+
+                '<div><label>Color</label><input type="color" name="ss_3d['+ei+'][color]" value="#ffffff"></div>'+
+                '<div><label>Opacity</label><input type="number" name="ss_3d['+ei+'][opacity]" value="0.3" min="0.05" max="1" step="0.05"></div>'+
+                '<button type="button" class="ss-3d-del">X</button></div>'
+            );
+            ei++;
+        });
+        $('#ss-3d-list').on('click','.ss-3d-del',function(){ $(this).closest('.ss-3d-row').remove(); });
     });
     </script>
     <?php
@@ -308,6 +375,26 @@ add_action( 'save_post_scroll_section', function ( $post_id ) {
         }
     }
     update_post_meta( $post_id, '_ss_videos', wp_json_encode( $videos ) );
+
+    // Save 3D elements
+    $els3d = array();
+    if ( isset( $_POST['ss_3d'] ) && is_array( $_POST['ss_3d'] ) ) {
+        foreach ( $_POST['ss_3d'] as $e ) {
+            $type = isset( $e['type'] ) ? sanitize_text_field( $e['type'] ) : 'circle';
+            $content = isset( $e['content'] ) ? sanitize_text_field( wp_unslash( $e['content'] ) ) : '';
+            $els3d[] = array(
+                'type'    => $type,
+                'content' => $content,
+                'depth'   => floatval( $e['depth'] ?? 0.5 ),
+                'x'       => intval( $e['x'] ?? 50 ),
+                'y'       => intval( $e['y'] ?? 50 ),
+                'size'    => intval( $e['size'] ?? 60 ),
+                'color'   => sanitize_hex_color( $e['color'] ?? '#ffffff' ) ?: '#ffffff',
+                'opacity' => floatval( $e['opacity'] ?? 0.3 ),
+            );
+        }
+    }
+    update_post_meta( $post_id, '_ss_3d_elements', wp_json_encode( $els3d ) );
 } );
 
 // Auto-set order meta so queries always find sections
@@ -435,6 +522,53 @@ function ss_render_sections() {
 
         // Overlay
         $html .= '<div class="ss-over" style="background:' . esc_attr( $rgba ) . '"></div>';
+
+        // 3D floating elements
+        $els3d_raw = get_post_meta( $id, '_ss_3d_elements', true );
+        $els3d = $els3d_raw ? json_decode( $els3d_raw, true ) : array();
+        if ( is_array( $els3d ) && ! empty( $els3d ) ) {
+            $html .= '<div class="ss-depth-layer">';
+            foreach ( $els3d as $e ) {
+                $type    = $e['type'] ?? 'circle';
+                $cont    = $e['content'] ?? '';
+                $depth   = floatval( $e['depth'] ?? 0.5 );
+                $x       = intval( $e['x'] ?? 50 );
+                $y       = intval( $e['y'] ?? 50 );
+                $size    = intval( $e['size'] ?? 60 );
+                $color   = $e['color'] ?? '#ffffff';
+                $opac    = floatval( $e['opacity'] ?? 0.3 );
+
+                $style = 'left:' . $x . '%;top:' . $y . '%;';
+
+                if ( $type === 'text' ) {
+                    $style .= 'font-size:' . $size . 'px;color:' . esc_attr( $color ) . ';';
+                    $html .= '<div class="ss-3d ss-3d-text" data-depth="' . $depth . '" style="' . $style . '">' . esc_html( $cont ) . '</div>';
+                } elseif ( $type === 'image' ) {
+                    $style .= 'width:' . $size . 'px;';
+                    $html .= '<div class="ss-3d ss-3d-image" data-depth="' . $depth . '" style="' . $style . '"><img src="' . esc_url( $cont ) . '" alt=""></div>';
+                } else {
+                    // Shapes: circle, square, ring, line
+                    $shape_class = 'ss-3d-shape';
+                    if ( $type === 'square' ) $shape_class .= ' ss-3d-shape-square';
+                    elseif ( $type === 'ring' ) $shape_class .= ' ss-3d-shape-ring';
+                    elseif ( $type === 'line' ) $shape_class .= ' ss-3d-shape-line';
+
+                    $w = $size;
+                    $h = ( $type === 'line' ) ? max( 4, intval( $size * 0.06 ) ) : $size;
+                    $bg = ( $type === 'ring' ) ? 'transparent;border-color:' . esc_attr( $color ) : esc_attr( $color );
+                    $style .= 'width:' . $w . 'px;height:' . $h . 'px;';
+                    if ( $type !== 'ring' ) {
+                        $style .= 'background:' . esc_attr( $color ) . ';';
+                    } else {
+                        $style .= 'border-color:' . esc_attr( $color ) . ';';
+                    }
+                    $style .= 'opacity:' . $opac . ';';
+
+                    $html .= '<div class="ss-3d ' . $shape_class . '" data-depth="' . $depth . '" style="' . $style . '"></div>';
+                }
+            }
+            $html .= '</div>'; // .ss-depth-layer
+        }
 
         // Content
         $html .= '<div class="ss-cnt" style="text-align:' . esc_attr( $text_align ) . ';max-width:' . $content_w . 'px">';
