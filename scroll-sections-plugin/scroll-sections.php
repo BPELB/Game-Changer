@@ -540,7 +540,7 @@ function ss_render_sections( $show_globe = true ) {
             $i, esc_attr( $vid_auto )
         );
 
-        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' data-globe-color="' . esc_attr( $globe_color ) . '" style="min-height:100vh;height:' . $sec_height . 'vh;width:100%">';
+        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' data-globe-color="' . esc_attr( $globe_color ) . '" style="min-height:' . $sec_height . 'vh;width:100%">';
 
         // BG
         if ( $bg_type === 'video' && $bg_video ) {
