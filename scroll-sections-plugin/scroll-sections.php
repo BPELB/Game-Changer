@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: Scroll Sections
- * Description: Cinematic full-screen scroll sections with parallax, animations, and inline video embeds. Use [scroll_sections] shortcode or the included page template.
- * Version: 4.0.0
+ * Description: Cinematic full-screen scroll sections with parallax, animations, 3D globe background, and inline video embeds. Use [scroll_sections] shortcode or the included page template.
+ * Version: 5.0.0
  * Author: Brandon
  * Text Domain: scroll-sections
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SS_VER', '4.0.0' );
+define( 'SS_VER', '5.0.0' );
 define( 'SS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -83,6 +83,7 @@ function ss_render_meta_box( $post ) {
         'video_layout'    => get_post_meta( $post->ID, '_ss_video_layout', true ) ?: 'stack',
         'section_height'  => get_post_meta( $post->ID, '_ss_section_height', true ) ?: '100',
         'title_visible'   => get_post_meta( $post->ID, '_ss_title_visible', true ) ?: 'yes',
+        'globe_color'     => get_post_meta( $post->ID, '_ss_globe_color', true ) ?: '#c8ff00',
     );
 
     $videos_raw = get_post_meta( $post->ID, '_ss_videos', true );
@@ -162,6 +163,16 @@ function ss_render_meta_box( $post ) {
                 <input type="color" name="ss_overlay_color" value="<?php echo esc_attr( $m['overlay_color'] ); ?>"></p>
             <p><label>Overlay Opacity (0–1)</label>
                 <input type="number" name="ss_overlay" value="<?php echo esc_attr( $m['overlay'] ); ?>" min="0" max="1" step="0.05"></p>
+        </div>
+    </div>
+
+    <!-- 3D Globe -->
+    <div class="ss-box">
+        <h4>3D Globe Background <small style="font-weight:normal;color:#666">— wireframe globe that rotates with scroll and changes color per section</small></h4>
+        <div class="ss-grid">
+            <p><label>Globe Accent Color</label>
+                <input type="color" name="ss_globe_color" value="<?php echo esc_attr( $m['globe_color'] ); ?>">
+                <small>The globe transitions to this color when this section is in view</small></p>
         </div>
     </div>
 
@@ -354,6 +365,7 @@ add_action( 'save_post_scroll_section', function ( $post_id ) {
         'ss_video_layout'     => '_ss_video_layout',
         'ss_section_height'   => '_ss_section_height',
         'ss_title_visible'    => '_ss_title_visible',
+        'ss_globe_color'      => '_ss_globe_color',
     );
 
     foreach ( $fields as $field => $key ) {
@@ -409,8 +421,9 @@ add_action( 'save_post', function ( $post_id ) {
    ========================================================================= */
 
 add_action( 'wp_enqueue_scripts', function () {
-    $css = SS_DIR . 'assets/css/scroll-sections.css';
-    $js  = SS_DIR . 'assets/js/scroll-sections.js';
+    $css      = SS_DIR . 'assets/css/scroll-sections.css';
+    $js       = SS_DIR . 'assets/js/scroll-sections.js';
+    $globe_js = SS_DIR . 'assets/js/scroll-sections-globe.js';
 
     wp_enqueue_style(
         'scroll-sections-css',
@@ -424,6 +437,23 @@ add_action( 'wp_enqueue_scripts', function () {
         SS_URL . 'assets/js/scroll-sections.js',
         array(),
         SS_VER . '.' . ( file_exists( $js ) ? filemtime( $js ) : time() ),
+        true
+    );
+
+    // Three.js (CDN) + Globe script
+    wp_enqueue_script(
+        'three-js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        array(),
+        'r128',
+        true
+    );
+
+    wp_enqueue_script(
+        'scroll-sections-globe-js',
+        SS_URL . 'assets/js/scroll-sections-globe.js',
+        array( 'three-js', 'scroll-sections-js' ),
+        SS_VER . '.' . ( file_exists( $globe_js ) ? filemtime( $globe_js ) : time() ),
         true
     );
 } );
@@ -452,7 +482,7 @@ function ss_get_sections() {
    6. Render HTML
    ========================================================================= */
 
-function ss_render_sections() {
+function ss_render_sections( $show_globe = true ) {
     $q = ss_get_sections();
     if ( ! $q->have_posts() ) {
         return '<p style="text-align:center;padding:4rem 2rem;color:#999;">No scroll sections found. Create them under <strong>Scroll Sections</strong> in the admin.</p>';
@@ -484,6 +514,7 @@ function ss_render_sections() {
         $vid_layout     = get_post_meta( $id, '_ss_video_layout', true ) ?: 'stack';
         $sec_height     = intval( get_post_meta( $id, '_ss_section_height', true ) ?: 100 );
         $show_title     = get_post_meta( $id, '_ss_title_visible', true ) ?: 'yes';
+        $globe_color    = get_post_meta( $id, '_ss_globe_color', true ) ?: '#c8ff00';
 
         // Videos
         $vids_raw = get_post_meta( $id, '_ss_videos', true );
@@ -509,7 +540,7 @@ function ss_render_sections() {
             $i, esc_attr( $vid_auto )
         );
 
-        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' style="min-height:100vh;height:' . $sec_height . 'vh;width:100%">';
+        $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' data-globe-color="' . esc_attr( $globe_color ) . '" style="min-height:100vh;height:' . $sec_height . 'vh;width:100%">';
 
         // BG
         if ( $bg_type === 'video' && $bg_video ) {
@@ -622,7 +653,15 @@ function ss_render_sections() {
     wp_reset_postdata();
 
     // Build full output with wrapper, nav, progress
-    $out  = '<div class="ss-wrap" id="ss-wrap">';
+    $globe_attr = $show_globe ? 'yes' : 'no';
+    $out  = '<div class="ss-wrap" id="ss-wrap" data-globe="' . $globe_attr . '">';
+
+    // 3D globe canvas + noise overlay
+    if ( $show_globe ) {
+        $out .= '<canvas class="ss-globe-canvas" id="ss-globe-canvas"></canvas>';
+        $out .= '<div class="ss-noise"></div>';
+    }
+
     $out .= $html;
 
     // Nav dots
@@ -640,8 +679,9 @@ function ss_render_sections() {
     return $out;
 }
 
-add_shortcode( 'scroll_sections', function () {
-    return ss_render_sections();
+add_shortcode( 'scroll_sections', function ( $atts ) {
+    $atts = shortcode_atts( array( 'globe' => 'yes' ), $atts, 'scroll_sections' );
+    return ss_render_sections( $atts['globe'] !== 'no' );
 } );
 
 /* =========================================================================
