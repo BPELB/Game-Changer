@@ -23,12 +23,43 @@
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     /* ==================================================================
+       Force Full Width — override any parent container constraints
+       ================================================================== */
+
+    function forceFullWidth() {
+        var el = document.getElementById('ss-wrap');
+        if (!el) return;
+
+        // Walk up the DOM and force every parent container to allow overflow
+        var parent = el.parentElement;
+        while (parent && parent !== document.body && parent !== document.documentElement) {
+            var style = window.getComputedStyle(parent);
+            // If parent has overflow hidden or a constraining max-width, override
+            if (style.overflow === 'hidden' || style.overflowX === 'hidden') {
+                parent.style.overflow = 'visible';
+                parent.style.overflowX = 'visible';
+            }
+            parent = parent.parentElement;
+        }
+
+        // Position the wrapper to span full viewport width
+        var rect = el.getBoundingClientRect();
+        el.style.width = '100vw';
+        el.style.maxWidth = '100vw';
+        el.style.marginLeft = (-rect.left) + 'px';
+        el.style.boxSizing = 'border-box';
+    }
+
+    /* ==================================================================
        Init
        ================================================================== */
 
     function init() {
         wrap = document.getElementById('ss-wrap');
         if (!wrap) return;
+
+        // Force full-width: bust out of any theme container
+        forceFullWidth();
 
         secs = wrap.querySelectorAll('.ss-sec');
         nav  = document.getElementById('ss-nav');
