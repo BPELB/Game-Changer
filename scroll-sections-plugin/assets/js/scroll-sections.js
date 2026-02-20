@@ -101,11 +101,8 @@
                     el: el3d,
                     section: sec,
                     depth: depth,
-                    startZ: -300 * depth,   // starts far away
-                    curZ: -300 * depth,
-                    destZ: -300 * depth,
-                    curScale: 1,
-                    destScale: 1,
+                    curScale: 0.4,
+                    destScale: 0.4,
                     curOpacity: 0,
                     destOpacity: 0
                 });
@@ -237,44 +234,38 @@
             var progress = Math.max(0, Math.min(1, raw));
 
             // Three-phase lifecycle:
-            //   Phase 1 (0.0–0.25): Fade in, fly toward viewer, scale up
-            //   Phase 2 (0.25–0.65): Fully visible, continue growing
-            //   Phase 3 (0.65–1.0): Fade out before next section
+            //   Phase 1 (0.0–0.2):  Fade in, scale up from small
+            //   Phase 2 (0.2–0.6):  Fully visible, keep growing
+            //   Phase 3 (0.6–1.0):  Fade out before next section
             var opacity;
-            if (progress < 0.25) {
-                opacity = progress / 0.25;
-            } else if (progress < 0.65) {
+            if (progress < 0.2) {
+                opacity = progress / 0.2;
+            } else if (progress < 0.6) {
                 opacity = 1;
             } else {
-                opacity = 1 - (progress - 0.65) / 0.35;
+                opacity = 1 - (progress - 0.6) / 0.4;
             }
             d.destOpacity = Math.max(0, Math.min(1, opacity));
 
-            // Map progress to Z: starts far away, flies toward viewer
-            var growProgress = Math.min(1, progress * 1.5);
-            var maxZ = 400 * d.depth;
-            d.destZ = d.startZ + (maxZ - d.startZ) * growProgress;
-
-            // Scale increases as it comes closer
-            d.destScale = 1 + (0.3 * d.depth * growProgress);
+            // Scale: starts small, grows as section scrolls through
+            var growProgress = Math.min(1, progress * 1.4);
+            d.destScale = 0.4 + (0.9 * d.depth * growProgress);
         });
     }
 
     function depthLerp() {
         depthEls.forEach(function (d) {
-            d.curZ += (d.destZ - d.curZ) * LERP;
             d.curScale += (d.destScale - d.curScale) * LERP;
             d.curOpacity += (d.destOpacity - d.curOpacity) * LERP;
 
-            if (Math.abs(d.destZ - d.curZ) < 0.1) d.curZ = d.destZ;
             if (Math.abs(d.destScale - d.curScale) < 0.001) d.curScale = d.destScale;
             if (Math.abs(d.destOpacity - d.curOpacity) < 0.005) d.curOpacity = d.destOpacity;
 
-            d.el.style.transform =
-                'translateZ(' + d.curZ + 'px) ' +
-                'scale(' + d.curScale.toFixed(3) + ')';
-
+            d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
             d.el.style.opacity = d.curOpacity.toFixed(3);
+
+            // Hide completely when invisible to prevent overlap
+            d.el.style.visibility = d.curOpacity < 0.01 ? 'hidden' : 'visible';
         });
     }
 

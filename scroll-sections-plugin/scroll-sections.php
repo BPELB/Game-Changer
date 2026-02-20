@@ -542,13 +542,12 @@ function ss_render_sections( $show_globe = true ) {
 
         $html .= '<section class="ss-sec ss-pos-' . esc_attr( $content_pos ) . '" ' . $data . ' data-globe-color="' . esc_attr( $globe_color ) . '" style="min-height:' . $sec_height . 'vh;width:100%">';
 
-        // BG
+        // BG — globe is the universal background; only video sections get opaque BGs
         if ( $bg_type === 'video' && $bg_video ) {
             $html .= '<div class="ss-bg ss-bg-vid"><video autoplay muted loop playsinline><source src="' . esc_url( $bg_video ) . '" type="video/mp4"></video></div>';
-        } elseif ( $bg_type === 'image' && $bg_img ) {
-            $html .= '<div class="ss-bg ss-bg-img" style="background-image:url(' . esc_url( $bg_img ) . ')"></div>';
         } else {
-            $html .= '<div class="ss-bg" style="background:' . esc_attr( $overlay_color ) . '"></div>';
+            // Transparent bg — globe shows through the overlay
+            $html .= '<div class="ss-bg"></div>';
         }
 
         // Overlay

@@ -116,7 +116,7 @@
     var scrollY      = window.pageYOffset || 0;
     var targetColor  = new THREE.Color(defaultHex);
     var currentColor = new THREE.Color(defaultHex);
-    var globeVisible = false;
+    var globeVisible = true;
 
     window.addEventListener('scroll', function () {
         scrollY = window.pageYOffset || document.documentElement.scrollTop;
