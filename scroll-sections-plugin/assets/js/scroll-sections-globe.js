@@ -47,12 +47,12 @@
         if (fc) defaultHex = fc;
     }
 
-    var geo = new THREE.IcosahedronGeometry(1.6, 1);
+    var geo = new THREE.IcosahedronGeometry(1.8, 2);
     var mat = new THREE.MeshStandardMaterial({
         color: defaultHex,
         wireframe: true,
         transparent: true,
-        opacity: 0.55
+        opacity: 0.7
     });
     var mesh = new THREE.Mesh(geo, mat);
     scene.add(mesh);
@@ -61,11 +61,11 @@
     var innerMat = new THREE.MeshStandardMaterial({
         color: defaultHex,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.18,
         emissive: defaultHex,
-        emissiveIntensity: 0.6
+        emissiveIntensity: 0.8
     });
-    var innerMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 2), innerMat);
+    var innerMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2), innerMat);
     scene.add(innerMesh);
 
     /* ==================================================================
@@ -88,9 +88,9 @@
 
     var particleMat = new THREE.PointsMaterial({
         color: defaultHex,
-        size: 0.04,
+        size: 0.05,
         transparent: true,
-        opacity: 0.7
+        opacity: 0.8
     });
     var particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
@@ -99,13 +99,13 @@
        Lights
        ================================================================== */
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 
-    var pointLight = new THREE.PointLight(defaultHex, 2.5, 15);
+    var pointLight = new THREE.PointLight(defaultHex, 3.0, 20);
     pointLight.position.set(3, 3, 3);
     scene.add(pointLight);
 
-    var backLight = new THREE.PointLight(0x6366f1, 1.2, 12);
+    var backLight = new THREE.PointLight(0x6366f1, 1.5, 15);
     backLight.position.set(-3, -2, -3);
     scene.add(backLight);
 
@@ -116,7 +116,7 @@
     var scrollY      = window.pageYOffset || 0;
     var targetColor  = new THREE.Color(defaultHex);
     var currentColor = new THREE.Color(defaultHex);
-    var globeVisible = true;
+    var globeVisible = false;
 
     window.addEventListener('scroll', function () {
         scrollY = window.pageYOffset || document.documentElement.scrollTop;
@@ -142,13 +142,13 @@
     sections.forEach(function (s) { observer.observe(s); });
 
     /* ==================================================================
-       Visibility — sticky canvas is contained within wrap automatically.
-       Just track whether wrap is in viewport for perf (skip render when off-screen).
+       Visibility — show/hide + clip canvas to wrap bounds
        ================================================================== */
 
     var wrapObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             globeVisible = entry.isIntersecting;
+            canvas.style.opacity = globeVisible ? '1' : '0';
         });
     }, { threshold: 0 });
 
@@ -173,6 +173,11 @@
         var wrapMax     = wrapH - window.innerHeight;
         var localScroll = scrollY - wrapTop;
         var scrollProgress = wrapMax > 0 ? Math.max(0, Math.min(1, localScroll / wrapMax)) : 0;
+
+        // Clip canvas to wrap bounds so it doesn't bleed into header/footer
+        var clipTop    = Math.max(0, wrapRect.top);
+        var clipBottom = Math.max(0, window.innerHeight - wrapRect.bottom);
+        canvas.style.clipPath = 'inset(' + clipTop + 'px 0 ' + clipBottom + 'px 0)';
 
         // --- Rotate based on scroll + time ---
         mesh.rotation.x = scrollProgress * Math.PI * 2 + t * 0.1;
@@ -199,8 +204,8 @@
         pointLight.color.copy(currentColor);
 
         // --- Wireframe opacity based on scroll ---
-        mat.opacity      = 0.45 + scrollProgress * 0.35;
-        innerMat.opacity  = 0.1 + scrollProgress * 0.12;
+        mat.opacity      = 0.6 + scrollProgress * 0.3;
+        innerMat.opacity  = 0.15 + scrollProgress * 0.15;
 
         // --- Camera subtle movement ---
         camera.position.x = Math.sin(t * 0.2) * 0.3;

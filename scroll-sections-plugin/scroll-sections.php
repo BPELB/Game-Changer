@@ -203,6 +203,7 @@ function ss_render_meta_box( $post ) {
                 </select></p>
             <p><label>Video Layout</label>
                 <select name="ss_video_layout">
+                    <option value="mosaic" <?php selected( $m['video_layout'], 'mosaic' ); ?>>Mosaic (mixed sizes)</option>
                     <option value="stack" <?php selected( $m['video_layout'], 'stack' ); ?>>Stacked (one per row)</option>
                     <option value="grid-2" <?php selected( $m['video_layout'], 'grid-2' ); ?>>Grid — 2 columns</option>
                     <option value="grid-3" <?php selected( $m['video_layout'], 'grid-3' ); ?>>Grid — 3 columns</option>

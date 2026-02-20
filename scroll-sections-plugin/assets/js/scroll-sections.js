@@ -136,6 +136,15 @@
         // Initial pass
         onScroll();
 
+        // Apply initial 3D depth state immediately (skip lerp for first frame)
+        depthEls.forEach(function (d) {
+            d.curScale = d.destScale;
+            d.curOpacity = d.destOpacity;
+            d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
+            d.el.style.opacity = d.curOpacity.toFixed(3);
+            d.el.style.visibility = d.curOpacity < 0.01 ? 'hidden' : 'visible';
+        });
+
         // Start parallax loop
         rafId = requestAnimationFrame(parallaxLoop);
     }
@@ -225,6 +234,13 @@
 
     function doDepthTargets(scrollY, viewH) {
         depthEls.forEach(function (d) {
+            // Hard gate: only show when section is revealed
+            if (!d.section.classList.contains('ss-visible')) {
+                d.destOpacity = 0;
+                d.destScale = 0.4;
+                return;
+            }
+
             var rect = d.section.getBoundingClientRect();
             var secH = rect.height || viewH;
 
@@ -233,7 +249,7 @@
             var secCenter = rect.top + secH / 2;
             var viewCenter = viewH / 2;
             var distFromCenter = Math.abs(secCenter - viewCenter);
-            var maxDist = viewH * 0.65;
+            var maxDist = (viewH + secH) / 2;
             var centeredness = Math.max(0, 1 - distFromCenter / maxDist);
 
             // Smooth ease (smoothstep) for natural fade
