@@ -52,7 +52,7 @@
         color: defaultHex,
         wireframe: true,
         transparent: true,
-        opacity: 0.25
+        opacity: 0.55
     });
     var mesh = new THREE.Mesh(geo, mat);
     scene.add(mesh);
@@ -61,9 +61,9 @@
     var innerMat = new THREE.MeshStandardMaterial({
         color: defaultHex,
         transparent: true,
-        opacity: 0.04,
+        opacity: 0.12,
         emissive: defaultHex,
-        emissiveIntensity: 0.3
+        emissiveIntensity: 0.6
     });
     var innerMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 2), innerMat);
     scene.add(innerMesh);
@@ -88,9 +88,9 @@
 
     var particleMat = new THREE.PointsMaterial({
         color: defaultHex,
-        size: 0.02,
+        size: 0.04,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.7
     });
     var particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
@@ -99,13 +99,13 @@
        Lights
        ================================================================== */
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    var pointLight = new THREE.PointLight(defaultHex, 1.5, 15);
+    var pointLight = new THREE.PointLight(defaultHex, 2.5, 15);
     pointLight.position.set(3, 3, 3);
     scene.add(pointLight);
 
-    var backLight = new THREE.PointLight(0x6366f1, 0.8, 12);
+    var backLight = new THREE.PointLight(0x6366f1, 1.2, 12);
     backLight.position.set(-3, -2, -3);
     scene.add(backLight);
 
@@ -142,13 +142,13 @@
     sections.forEach(function (s) { observer.observe(s); });
 
     /* ==================================================================
-       Visibility — show/hide canvas based on wrapper viewport presence
+       Visibility — sticky canvas is contained within wrap automatically.
+       Just track whether wrap is in viewport for perf (skip render when off-screen).
        ================================================================== */
 
     var wrapObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             globeVisible = entry.isIntersecting;
-            canvas.style.opacity = globeVisible ? '1' : '0';
         });
     }, { threshold: 0 });
 
@@ -199,8 +199,8 @@
         pointLight.color.copy(currentColor);
 
         // --- Wireframe opacity based on scroll ---
-        mat.opacity      = 0.2 + scrollProgress * 0.3;
-        innerMat.opacity  = 0.03 + scrollProgress * 0.06;
+        mat.opacity      = 0.45 + scrollProgress * 0.35;
+        innerMat.opacity  = 0.1 + scrollProgress * 0.12;
 
         // --- Camera subtle movement ---
         camera.position.x = Math.sin(t * 0.2) * 0.3;

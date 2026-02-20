@@ -225,31 +225,22 @@
 
     function doDepthTargets(scrollY, viewH) {
         depthEls.forEach(function (d) {
-            var rect   = d.section.getBoundingClientRect();
-            var secTop = scrollY + rect.top;
-            var secH   = rect.height || viewH;
+            var rect = d.section.getBoundingClientRect();
+            var secH = rect.height || viewH;
 
-            // progress: 0 = section just entering bottom, 1 = section fully scrolled past
-            var raw = (scrollY + viewH - secTop) / (secH + viewH);
-            var progress = Math.max(0, Math.min(1, raw));
+            // How centered is this section in the viewport?
+            // 1 = section center is at viewport center, 0 = fully off screen
+            var secCenter = rect.top + secH / 2;
+            var viewCenter = viewH / 2;
+            var distFromCenter = Math.abs(secCenter - viewCenter);
+            var maxDist = viewH * 0.65;
+            var centeredness = Math.max(0, 1 - distFromCenter / maxDist);
 
-            // Three-phase lifecycle:
-            //   Phase 1 (0.0–0.2):  Fade in, scale up from small
-            //   Phase 2 (0.2–0.6):  Fully visible, keep growing
-            //   Phase 3 (0.6–1.0):  Fade out before next section
-            var opacity;
-            if (progress < 0.2) {
-                opacity = progress / 0.2;
-            } else if (progress < 0.6) {
-                opacity = 1;
-            } else {
-                opacity = 1 - (progress - 0.6) / 0.4;
-            }
-            d.destOpacity = Math.max(0, Math.min(1, opacity));
+            // Smooth ease (smoothstep) for natural fade
+            var eased = centeredness * centeredness * (3 - 2 * centeredness);
 
-            // Scale: starts small, grows as section scrolls through
-            var growProgress = Math.min(1, progress * 1.4);
-            d.destScale = 0.4 + (0.9 * d.depth * growProgress);
+            d.destOpacity = eased;
+            d.destScale = 0.4 + (0.9 * d.depth * eased);
         });
     }
 
