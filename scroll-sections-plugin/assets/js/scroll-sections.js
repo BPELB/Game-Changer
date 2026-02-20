@@ -140,7 +140,12 @@
         depthEls.forEach(function (d) {
             d.curScale = d.destScale;
             d.curOpacity = d.destOpacity;
-            d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
+            var isShape = d.el.classList.contains('ss-3d-shape');
+            if (isShape) {
+                d.el.style.setProperty('--ss-scale', d.curScale.toFixed(3));
+            } else {
+                d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
+            }
             d.el.style.opacity = d.curOpacity.toFixed(3);
             d.el.style.visibility = d.curOpacity < 0.01 ? 'hidden' : 'visible';
         });
@@ -233,28 +238,33 @@
        ================================================================== */
 
     function doDepthTargets(scrollY, viewH) {
+        // Winner-takes-all: find the single most-centered section
+        var bestSection = null;
+        var bestCenter  = 0;
+        var viewCenter  = viewH / 2;
+
+        secs.forEach(function (sec) {
+            var rect = sec.getBoundingClientRect();
+            var secH = rect.height || viewH;
+            var secCenter = rect.top + secH / 2;
+            var dist = Math.abs(secCenter - viewCenter);
+            var maxDist = (viewH + secH) / 2;
+            var c = Math.max(0, 1 - dist / maxDist);
+            if (c > bestCenter) {
+                bestCenter  = c;
+                bestSection = sec;
+            }
+        });
+
         depthEls.forEach(function (d) {
-            // Hard gate: only show when section is revealed
-            if (!d.section.classList.contains('ss-visible')) {
+            // Only the winning section's elements are visible
+            if (d.section !== bestSection) {
                 d.destOpacity = 0;
                 d.destScale = 0.4;
                 return;
             }
 
-            var rect = d.section.getBoundingClientRect();
-            var secH = rect.height || viewH;
-
-            // How centered is this section in the viewport?
-            // 1 = section center is at viewport center, 0 = fully off screen
-            var secCenter = rect.top + secH / 2;
-            var viewCenter = viewH / 2;
-            var distFromCenter = Math.abs(secCenter - viewCenter);
-            var maxDist = (viewH + secH) / 2;
-            var centeredness = Math.max(0, 1 - distFromCenter / maxDist);
-
-            // Smooth ease (smoothstep) for natural fade
-            var eased = centeredness * centeredness * (3 - 2 * centeredness);
-
+            var eased = bestCenter * bestCenter * (3 - 2 * bestCenter);
             d.destOpacity = eased;
             d.destScale = 0.4 + (0.9 * d.depth * eased);
         });
@@ -268,7 +278,14 @@
             if (Math.abs(d.destScale - d.curScale) < 0.001) d.curScale = d.destScale;
             if (Math.abs(d.destOpacity - d.curOpacity) < 0.005) d.curOpacity = d.destOpacity;
 
-            d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
+            // Shapes use CSS custom property (so CSS rotation animation isn't overridden)
+            // Text/image use direct transform
+            var isShape = d.el.classList.contains('ss-3d-shape');
+            if (isShape) {
+                d.el.style.setProperty('--ss-scale', d.curScale.toFixed(3));
+            } else {
+                d.el.style.transform = 'scale(' + d.curScale.toFixed(3) + ')';
+            }
             d.el.style.opacity = d.curOpacity.toFixed(3);
 
             // Hide completely when invisible to prevent overlap

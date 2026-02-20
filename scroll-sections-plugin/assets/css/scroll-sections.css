@@ -150,14 +150,16 @@
 .ss-vl-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
+    padding: 1rem;
 }
 
 /* 3-column grid */
 .ss-vl-grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
+    padding: 1rem;
 }
 
 /* Featured: first video full width, rest in a flex row */
@@ -175,12 +177,13 @@
     flex: 1 1 280px;
 }
 
-/* Mosaic: mixed-size tiles */
+/* Mosaic: mixed-size tiles with generous spacing */
 .ss-vl-mosaic {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: minmax(160px, 220px);
-    gap: 0.75rem;
+    grid-auto-rows: minmax(180px, 240px);
+    gap: 1.5rem;
+    padding: 1rem;
 }
 
 .ss-vl-mosaic .ss-vitem:nth-child(1) {
@@ -204,9 +207,10 @@
 
 /* Video item */
 .ss-vitem {
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .ss-vitem video {
@@ -281,12 +285,13 @@
     overflow: hidden;
 }
 
-/* Individual floating element */
+/* Individual floating element — scale via custom prop so CSS rotation isn't clobbered */
 .ss-3d {
     position: absolute;
     will-change: transform, opacity;
     transition: none;
     pointer-events: none;
+    --ss-scale: 0.4;
 }
 
 /* Text type */
@@ -312,21 +317,33 @@
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(4px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: ss-spin 18s linear infinite;
 }
 
+/* Squares → small circles */
 .ss-3d-shape-square {
-    border-radius: 12px;
+    border-radius: 50%;
+    max-width: 40px;
+    max-height: 40px;
+    animation: ss-spin 12s linear infinite;
 }
 
 .ss-3d-shape-ring {
     border-radius: 50%;
     background: transparent;
     border: 3px solid rgba(255, 255, 255, 0.3);
+    animation: ss-spin 24s linear infinite reverse;
 }
 
 .ss-3d-shape-line {
     border-radius: 2px;
     background: rgba(255, 255, 255, 0.2);
+    animation: none;
+}
+
+@keyframes ss-spin {
+    from { transform: scale(var(--ss-scale, 1)) rotate(0deg); }
+    to   { transform: scale(var(--ss-scale, 1)) rotate(360deg); }
 }
 
 /* ==========================================================================
