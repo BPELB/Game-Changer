@@ -646,17 +646,17 @@ body {
   gap: 12px;
 }
 
-.refill-tier:first-child { background: var(--brown); }
-.refill-tier:last-child  { background: var(--cream); }
+.refill-tier:first-child { background: var(--green); }
+.refill-tier:last-child  { background: var(--green-pale); }
 
 .refill-tier-label {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--orange-light);
+  color: rgba(255,255,255,0.7);
 }
-.refill-tier:last-child .refill-tier-label { color: var(--orange); }
+.refill-tier:last-child .refill-tier-label { color: var(--green); }
 
 .refill-tier-price {
   font-family: var(--font-serif);
@@ -668,7 +668,7 @@ body {
 .refill-tier:last-child .refill-tier-price { color: var(--brown); }
 
 .refill-tier p {
-  color: rgba(218,215,205,0.85);
+  color: rgba(255,255,255,0.85);
   font-size: 0.95rem;
   line-height: 1.7;
   flex: 1;
@@ -678,14 +678,49 @@ body {
 .refill-divider {
   font-size: 2rem;
   font-weight: 900;
-  color: var(--orange);
-  background: var(--cream-dark);
+  color: var(--green-light);
+  background: var(--brown);
   align-self: stretch;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
+  min-width: 56px;
   padding: 0 8px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+  position: relative;
+}
+.refill-divider:hover {
+  background: var(--green);
+  color: var(--white);
+  transform: scaleY(1.04);
+}
+.refill-divider:hover::after {
+  content: "One game. All the seasons.";
+  position: absolute;
+  bottom: calc(50% - 48px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--brown);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 100px;
+  pointer-events: none;
+  z-index: 10;
+}
+@keyframes plusPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+.refill-divider:focus-visible {
+  outline: 3px solid var(--green-light);
+  outline-offset: 2px;
 }
 
 @media (max-width: 700px) {
@@ -720,7 +755,6 @@ body {
 .edition-easter,
 .edition-birthday,
 .edition-memorial,
-.edition-thanksgiving,
 .edition-classroom,
 .edition-workplace {
   background: var(--white);
@@ -778,6 +812,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 28px;
+  align-items: stretch;
 }
 
 .reason {
