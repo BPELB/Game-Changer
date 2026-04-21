@@ -5,15 +5,15 @@
 :root {
   --cream:       #dad7cd;
   --cream-dark:  #c8c4bb;
-  --orange:      #8C271E;
-  --orange-light:#a83028;
-  --orange-pale: #f2e0de;
+  --orange:      #75A6A9;
+  --orange-light:#8dbfc2;
+  --orange-pale: #deeef0;
   --green:       #416567;
-  --green-light: #6a9496;
-  --green-pale:  #e0ecec;
+  --green-light: #5a8285;
+  --green-pale:  #d0e4e6;
   --brown:       #0A1128;
-  --brown-mid:   #3d4a6a;
-  --warm-gray:   #8a8a8a;
+  --brown-mid:   #2a3d5c;
+  --warm-gray:   #8a8fa0;
   --white:       #FFFFFF;
   --shadow-sm:   0 2px 8px rgba(10,17,40,0.08);
   --shadow-md:   0 8px 32px rgba(10,17,40,0.12);
@@ -89,12 +89,12 @@ body {
 .btn-primary {
   background: var(--orange);
   color: var(--white);
-  box-shadow: 0 4px 20px rgba(140,39,30,0.35);
+  box-shadow: 0 4px 20px rgba(117,166,169,0.35);
 }
 .btn-primary:hover {
   background: var(--orange-light);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(140,39,30,0.45);
+  box-shadow: 0 8px 28px rgba(117,166,169,0.45);
 }
 
 .btn-ghost {
