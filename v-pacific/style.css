@@ -20,8 +20,9 @@
   --shadow-lg:   0 20px 60px rgba(10,17,40,0.16);
   --radius:      16px;
   --radius-lg:   24px;
-  --font-serif:  'Playfair Display', Georgia, serif;
-  --font-sans:   'Inter', system-ui, sans-serif;
+  --font-serif:    'Playfair Display', Georgia, serif;
+  --font-heading:  'Inter', system-ui, sans-serif;
+  --font-sans:     'Montserrat', system-ui, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +58,7 @@ body {
 }
 
 .section-title {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
   line-height: 1.2;
@@ -269,7 +270,7 @@ body {
 }
 
 .hero-headline {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: clamp(2.8rem, 6vw, 5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -409,7 +410,7 @@ body {
 .problem-icon { font-size: 2rem; margin-bottom: 20px; color: var(--green-light); }
 
 .problem-card h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--cream);
@@ -586,7 +587,7 @@ body {
 .why-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--green); }
 
 .why-card h3 {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--brown);
@@ -643,7 +644,7 @@ body {
 }
 
 .value-item h4 {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--white);
@@ -820,7 +821,7 @@ body {
 .edition-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--green-light); }
 
 .edition-card h3 {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--white);
@@ -944,7 +945,7 @@ body {
 }
 
 .contact-form h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-heading);
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--white);
@@ -1022,7 +1023,7 @@ body {
 }
 
 .footer-col-title {
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1065,37 +1066,37 @@ body {
 }
 .footer-newsletter-form {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
   margin-bottom: 12px;
 }
 .footer-newsletter-input {
-  width: 100%;
-  background: rgba(255,255,255,0.08);
-  border: 1.5px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 0;
   outline: none;
   font-family: var(--font-sans);
   font-size: 0.9rem;
-  font-weight: 400;
   color: var(--white);
-  padding: 9px 14px;
+  padding: 6px 0;
   transition: border-color 0.2s;
 }
-.footer-newsletter-input:focus { border-color: var(--green-light); }
+.footer-newsletter-input:focus { border-bottom-color: var(--green-light); }
 .footer-newsletter-input::placeholder { color: rgba(255,255,255,0.4); }
 .footer-newsletter-btn {
-  width: 100%;
+  flex-shrink: 0;
   background: var(--green-light);
   border: none;
   border-radius: 100px;
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--brown);
-  padding: 10px 20px;
+  padding: 8px 18px;
   transition: opacity 0.2s, transform 0.15s;
 }
 .footer-newsletter-btn:hover { opacity: 0.88; transform: translateY(-1px); }
@@ -1130,11 +1131,15 @@ body {
 .footer-bottom { padding: 28px 0; }
 .footer-bottom-inner {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr auto auto;
+  gap: 40px;
   align-items: center;
 }
-.footer-bottom-brand { display: flex; justify-content: flex-start; }
+.footer-bottom-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
 .footer-bottom-legal { justify-self: center; }
 .footer-stars { justify-self: center; }
 .footer-social { justify-self: end; }
