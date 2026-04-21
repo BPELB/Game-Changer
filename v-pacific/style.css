@@ -57,16 +57,18 @@ body {
 }
 
 .section-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   color: var(--brown);
   margin-bottom: 24px;
 }
 
 .section-title em {
+  font-family: var(--font-serif);
   font-style: italic;
+  font-weight: 400;
   color: var(--green);
 }
 
@@ -267,15 +269,17 @@ body {
 }
 
 .hero-headline {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: clamp(2.8rem, 6vw, 5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
   color: var(--brown);
   margin-bottom: 28px;
 }
 .hero-headline em {
+  font-family: var(--font-serif);
   font-style: italic;
+  font-weight: 400;
   color: var(--green);
 }
 
@@ -582,8 +586,8 @@ body {
 .why-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--green); }
 
 .why-card h3 {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--brown);
   margin-bottom: 10px;
@@ -639,8 +643,8 @@ body {
 }
 
 .value-item h4 {
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--white);
   margin-bottom: 4px;
@@ -675,7 +679,7 @@ body {
 }
 
 .refill-tier:first-child { background: var(--green); }
-.refill-tier:last-child  { background: var(--cream); }
+.refill-tier:last-child  { background: var(--green-light); }
 
 .refill-tier-label {
   font-size: 0.75rem;
@@ -684,7 +688,7 @@ body {
   text-transform: uppercase;
   color: rgba(255,255,255,0.7);
 }
-.refill-tier:last-child .refill-tier-label { color: var(--warm-gray); }
+.refill-tier:last-child .refill-tier-label { color: rgba(10,17,40,0.6); }
 
 .refill-tier-price {
   font-family: var(--font-serif);
@@ -701,7 +705,30 @@ body {
   line-height: 1.7;
   flex: 1;
 }
-.refill-tier:last-child p { color: var(--brown-mid); }
+.refill-tier:last-child p { color: rgba(10,17,40,0.75); }
+
+/* Left tier — always-visible white button on dark teal */
+.refill-tier:first-child .btn-primary {
+  background: var(--white);
+  color: var(--green);
+  box-shadow: 0 4px 16px rgba(255,255,255,0.2);
+}
+.refill-tier:first-child .btn-primary:hover {
+  background: var(--cream);
+  color: var(--green);
+  transform: translateY(-2px);
+}
+
+/* Right tier — dark button on blue-teal */
+.refill-tier:last-child .btn-ghost {
+  background: var(--brown);
+  color: var(--white);
+  border-color: var(--brown);
+}
+.refill-tier:last-child .btn-ghost:hover {
+  background: var(--brown-mid);
+  border-color: var(--brown-mid);
+}
 
 .refill-divider {
   background: var(--white);
@@ -780,26 +807,26 @@ body {
 .edition-memorial,
 .edition-classroom,
 .edition-workplace {
-  background: var(--white);
-  border: 1px solid var(--cream-dark);
-  border-top: 3px solid var(--green);
+  background: var(--green);
+  border: none;
+  border-top: 3px solid rgba(255,255,255,0.15);
 }
 
 .edition-tag-live {
-  background: var(--green);
-  color: var(--white);
+  background: var(--green-light);
+  color: var(--brown);
 }
 
-.edition-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--green); }
+.edition-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--green-light); }
 
 .edition-card h3 {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
   font-weight: 700;
-  color: var(--brown);
+  color: var(--white);
   margin-bottom: 12px;
 }
-.edition-card p { color: var(--brown-mid); font-size: 0.9rem; line-height: 1.7; margin-bottom: 20px; }
+.edition-card p { color: rgba(218,215,205,0.8); font-size: 0.9rem; line-height: 1.7; margin-bottom: 20px; }
 
 .edition-tag {
   display: inline-block;
@@ -807,8 +834,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--orange);
-  background: var(--orange-pale);
+  color: rgba(218,215,205,0.8);
+  background: rgba(255,255,255,0.1);
   padding: 4px 12px;
   border-radius: 100px;
 }
@@ -1038,38 +1065,40 @@ body {
 }
 .footer-newsletter-form {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1.5px solid rgba(255,255,255,0.45);
-  padding-bottom: 10px;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 12px;
 }
 .footer-newsletter-input {
-  flex: 1;
-  background: transparent;
-  border: none;
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
   outline: none;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 400;
   color: var(--white);
-  padding: 4px 0;
+  padding: 9px 14px;
+  transition: border-color 0.2s;
 }
-.footer-newsletter-input::placeholder { color: rgba(255,255,255,0.45); }
+.footer-newsletter-input:focus { border-color: var(--green-light); }
+.footer-newsletter-input::placeholder { color: rgba(255,255,255,0.4); }
 .footer-newsletter-btn {
-  background: transparent;
+  width: 100%;
+  background: var(--green-light);
   border: none;
+  border-radius: 100px;
   cursor: pointer;
   font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: var(--white);
-  white-space: nowrap;
-  padding: 0;
-  transition: opacity 0.2s;
+  color: var(--brown);
+  padding: 10px 20px;
+  transition: opacity 0.2s, transform 0.15s;
 }
-.footer-newsletter-btn:hover { opacity: 0.65; }
+.footer-newsletter-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 .footer-newsletter-note {
   font-size: 0.76rem;
   color: rgba(255,255,255,0.5);
@@ -1101,10 +1130,14 @@ body {
 .footer-bottom { padding: 28px 0; }
 .footer-bottom-inner {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 40px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   align-items: center;
 }
+.footer-bottom-brand { display: flex; justify-content: flex-start; }
+.footer-bottom-legal { justify-self: center; }
+.footer-stars { justify-self: center; }
+.footer-social { justify-self: end; }
 
 .footer-logo {
   font-family: var(--font-serif);
