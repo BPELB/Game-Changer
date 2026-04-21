@@ -779,6 +779,34 @@ body {
   .refill-divider { min-width: unset; width: 100%; min-height: 72px; }
 }
 
+/* Store buttons */
+.store-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border: 2px solid var(--green);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--green);
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.store-btn:hover {
+  background: var(--green);
+  color: var(--white);
+}
+.store-btn i { font-size: 1.25rem; }
+
 .editions {
   padding: 100px 0;
   background: var(--cream);
