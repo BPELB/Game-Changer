@@ -287,8 +287,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0;
-  flex-wrap: wrap;
-  row-gap: 20px;
+  flex-wrap: nowrap;
 }
 
 .stat {
@@ -340,13 +339,12 @@ body {
   height: 20px;
   border-right: 2px solid var(--warm-gray);
   border-bottom: 2px solid var(--warm-gray);
-  transform: rotate(45deg);
   animation: bounce 1.4s ease infinite;
 }
 
 @keyframes bounce {
-  0%, 100% { transform: rotate(45deg) translateY(0); }
-  50% { transform: rotate(45deg) translateY(5px); }
+  0%, 100% { transform: translateY(0) rotate(45deg); }
+  50% { transform: translateY(6px) rotate(45deg); }
 }
 
 @keyframes fadeInUp {
