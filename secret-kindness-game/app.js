@@ -1,5 +1,5 @@
 // =============================================
-// THE SECRET KINDNESS GAME — app.js
+// GAME CHANGER — app.js
 // =============================================
 
 // --- Sticky nav shadow on scroll ---

@@ -1,5 +1,5 @@
 /* =============================================
-   THE SECRET KINDNESS GAME — Main Stylesheet
+   GAME CHANGER — Main Stylesheet
    ============================================= */
 
 :root {
@@ -640,10 +640,20 @@ body {
 }
 .edition-card:hover { transform: translateY(-6px); }
 
-.edition-holiday  { background: #FFF3E8; border: 2px solid #FFD9B8; }
-.edition-classroom { background: #E8F4FF; border: 2px solid #B8D9FF; }
-.edition-birthday  { background: #FFF0F6; border: 2px solid #FFB8D5; }
-.edition-workplace { background: #F0F8F0; border: 2px solid #B8DFBA; }
+.edition-christmas   { background: #F0F8F1; border: 2px solid #A8D8B0; }
+.edition-valentine   { background: #FFF0F4; border: 2px solid #FFB8CC; }
+.edition-galentine   { background: #FFF0FA; border: 2px solid #F5B8E8; }
+.edition-easter      { background: #F4F0FF; border: 2px solid #C8B8F5; }
+.edition-birthday    { background: #FFF8E8; border: 2px solid #FFD98A; }
+.edition-memorial    { background: #F0F4FF; border: 2px solid #B8C8F5; }
+.edition-thanksgiving { background: #FFF3E8; border: 2px solid #FFD9B8; }
+.edition-classroom   { background: #E8F4FF; border: 2px solid #B8D9FF; }
+.edition-workplace   { background: #F0F8F0; border: 2px solid #B8DFBA; }
+
+.edition-tag-live {
+  background: var(--green);
+  color: var(--white);
+}
 
 .edition-icon { font-size: 2.5rem; margin-bottom: 20px; }
 
