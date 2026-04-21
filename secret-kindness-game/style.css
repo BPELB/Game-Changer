@@ -375,6 +375,8 @@ body {
   border-radius: var(--radius-lg);
   padding: 36px 32px;
   transition: transform 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 .problem-card:hover {
   transform: translateY(-4px);
