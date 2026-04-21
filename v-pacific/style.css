@@ -60,7 +60,7 @@ body {
 .section-title {
   font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--brown);
   margin-bottom: 24px;
@@ -272,7 +272,7 @@ body {
 .hero-headline {
   font-family: var(--font-heading);
   font-size: clamp(2.8rem, 6vw, 5rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
   color: var(--brown);
   margin-bottom: 28px;
@@ -412,7 +412,7 @@ body {
 .problem-card h3 {
   font-family: var(--font-heading);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--cream);
   margin-bottom: 12px;
 }
@@ -589,7 +589,7 @@ body {
 .why-card h3 {
   font-family: var(--font-heading);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--brown);
   margin-bottom: 10px;
 }
@@ -646,7 +646,7 @@ body {
 .value-item h4 {
   font-family: var(--font-heading);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--white);
   margin-bottom: 4px;
 }
@@ -865,7 +865,7 @@ body {
 .edition-card h3 {
   font-family: var(--font-heading);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--white);
   margin-bottom: 12px;
 }
@@ -989,7 +989,7 @@ body {
 .contact-form h3 {
   font-family: var(--font-heading);
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--white);
   margin-bottom: 28px;
 }
