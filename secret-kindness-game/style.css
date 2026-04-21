@@ -807,6 +807,20 @@ body {
 }
 .store-btn i { font-size: 1.25rem; }
 
+.store-btn-footer {
+  margin-top: 16px;
+  border-color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+  font-size: 0.85rem;
+  padding: 9px 20px;
+}
+.store-btn-footer i { font-size: 1.1rem; }
+.store-btn-footer:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.45);
+  color: var(--white);
+}
+
 .editions {
   padding: 100px 0;
   background: var(--cream);
@@ -1185,10 +1199,9 @@ body {
 
 .footer-bottom-legal {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  text-align: center;
+  gap: 20px;
 }
 .footer-bottom-legal > p {
   font-size: 0.76rem;
