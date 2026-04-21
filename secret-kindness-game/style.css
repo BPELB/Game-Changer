@@ -134,11 +134,22 @@ body {
 }
 
 .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-serif);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--brown);
   text-decoration: none;
+}
+.logo-icon { display: block; flex-shrink: 0; }
+
+.footer-logo-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .nav-links {
@@ -1055,8 +1066,6 @@ body {
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--cream);
-  display: block;
-  margin-bottom: 4px;
 }
 .footer-bottom-brand p {
   font-size: 0.8rem;
