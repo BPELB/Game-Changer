@@ -5,6 +5,7 @@
 :root {
   --cream:       #dad7cd;
   --cream-dark:  #c8c4bb;
+  --secondary-gradient: linear-gradient(180deg, #f5f1e8 0%, #dad7cd 100%);
   --orange:      #416567;
   --orange-light:#5a8285;
   --orange-pale: #d0e4e6;
@@ -31,7 +32,7 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-sans);
-  background: var(--cream);
+  background: var(--secondary-gradient);
   color: var(--brown);
   line-height: 1.6;
   overflow-x: hidden;
@@ -220,6 +221,7 @@ body {
   justify-content: center;
   padding: 120px 0 80px;
   overflow: hidden;
+  background: var(--secondary-gradient);
 }
 
 .hero-bg {
@@ -422,7 +424,7 @@ body {
 /* ---- SOLUTION ---- */
 .solution {
   padding: 100px 0;
-  background: var(--cream);
+  background: var(--secondary-gradient);
 }
 
 .solution-inner {
@@ -823,7 +825,7 @@ body {
 
 .editions {
   padding: 100px 0;
-  background: var(--cream);
+  background: var(--secondary-gradient);
 }
 
 .editions-grid {
@@ -932,7 +934,7 @@ body {
 /* ---- CONTACT ---- */
 .contact {
   padding: 100px 0;
-  background: var(--cream);
+  background: var(--secondary-gradient);
 }
 
 .contact-inner {
