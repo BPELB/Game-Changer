@@ -10,6 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('gc-theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
 </head>
 <body>
 
@@ -30,15 +37,21 @@
           <text x="22" y="33" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="8.5" font-weight="700" fill="#416567" letter-spacing="0.5">GC</text>
         </svg>
       </a>
-      <ul class="nav-links">
-        <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#editions">Editions</a></li>
-        <li><a href="#why">Why It Works</a></li>
-        <li><a href="#contact" class="nav-cta">Get the Game</a></li>
-      </ul>
-      <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#editions">Editions</a></li>
+          <li><a href="#why">Why It Works</a></li>
+          <li><a href="#contact" class="nav-cta">Get the Game</a></li>
+        </ul>
+        <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode" aria-pressed="false">
+          <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+          <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+        </button>
+        <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
     <div class="nav-mobile" id="mobileMenu">
       <a href="#how-it-works">How It Works</a>

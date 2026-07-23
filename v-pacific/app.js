@@ -2,6 +2,32 @@
 // GAME CHANGER — app.js
 // =============================================
 
+// --- Light / dark theme toggle ---
+const themeToggle = document.getElementById('themeToggle');
+const root = document.documentElement;
+
+function currentTheme() {
+  return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+}
+
+function setTheme(theme) {
+  if (theme === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+  } else {
+    root.removeAttribute('data-theme');
+  }
+  themeToggle.setAttribute('aria-pressed', theme === 'dark');
+  themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+}
+
+setTheme(currentTheme());
+
+themeToggle.addEventListener('click', () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  localStorage.setItem('gc-theme', next);
+});
+
 // --- Sticky nav shadow on scroll ---
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
@@ -68,7 +94,7 @@ function handleSubmit(e) {
   // Simulate async submission (replace with real endpoint)
   setTimeout(() => {
     note.textContent = '♥ Thank you! Brandon will be in touch soon.';
-    note.style.color = 'var(--green)';
+    note.style.color = '#ffffff';
     e.target.reset();
     btn.textContent = 'Send Message ♥';
     btn.disabled = false;
@@ -89,7 +115,7 @@ window.addEventListener('scroll', () => {
 
   navAnchors.forEach(a => {
     a.style.color = a.getAttribute('href') === `#${current}`
-      ? 'var(--orange)'
+      ? 'var(--accent-text)'
       : '';
   });
 }, { passive: true });
