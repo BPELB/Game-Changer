@@ -85,6 +85,7 @@ body {
   text-transform: uppercase;
   color: var(--orange);
   background: var(--orange-pale);
+  border: 1px solid rgba(65,101,103,0.35);
   padding: 6px 14px;
   border-radius: 100px;
   margin-bottom: 20px;
@@ -342,6 +343,7 @@ body {
   text-transform: uppercase;
   color: var(--green);
   background: var(--green-pale);
+  border: 1px solid rgba(65,101,103,0.35);
   padding: 8px 18px;
   border-radius: 100px;
   margin-bottom: 28px;
@@ -462,7 +464,7 @@ body {
   background: var(--brown);
 }
 
-.problem .section-label { background: rgba(255,255,255,0.1); color: var(--cream); }
+.problem .section-label { background: rgba(255,255,255,0.1); color: var(--cream); border-color: rgba(255,255,255,0.25); }
 .problem .section-title { color: var(--cream); }
 .problem .section-title em { color: var(--orange-light); }
 
@@ -688,7 +690,7 @@ body {
   align-items: start;
 }
 
-.values .section-label { background: rgba(255,255,255,0.15); color: var(--white); }
+.values .section-label { background: rgba(255,255,255,0.15); color: var(--white); border-color: rgba(255,255,255,0.3); }
 .values .section-title { color: var(--white); }
 .values .section-title em { color: var(--green-light); }
 
@@ -801,19 +803,20 @@ body {
   transform: translateY(-2px);
 }
 
-/* Right tier — dark button on blue-teal */
+/* Right tier — dark button on green-light tier */
 .refill-tier:last-child .btn-ghost {
   background: var(--brown);
   color: var(--white);
   border-color: var(--brown);
 }
 .refill-tier:last-child .btn-ghost:hover {
-  background: var(--brown-mid);
-  border-color: var(--brown-mid);
+  background: var(--cream);
+  color: var(--brown);
+  border-color: var(--cream);
 }
 
 .refill-divider {
-  background: var(--bg-surface);
+  background: var(--cream);
   border-left: 1px solid rgba(65,101,103,0.15);
   border-right: 1px solid rgba(65,101,103,0.15);
   align-self: stretch;
@@ -919,9 +922,13 @@ body {
   padding: 36px 28px;
   position: relative;
   overflow: hidden;
+  box-shadow: none;
   transition: transform 0.2s;
 }
-.edition-card:hover { transform: translateY(-6px); }
+.edition-card:hover {
+  transform: translateY(-6px);
+  box-shadow: none;
+}
 
 .edition-christmas,
 .edition-valentine,
@@ -970,7 +977,7 @@ body {
   background: var(--brown);
 }
 
-.partnership .section-label { background: rgba(255,255,255,0.1); color: var(--cream); }
+.partnership .section-label { background: rgba(255,255,255,0.1); color: var(--cream); border-color: rgba(255,255,255,0.25); }
 .partnership .section-title { color: var(--cream); }
 .partnership .section-title em { color: var(--orange-light); }
 
