@@ -743,124 +743,131 @@ body {
   margin-bottom: 48px;
 }
 
-.refill-model {
-  display: flex;
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 72px 1fr;
   align-items: stretch;
-  background: var(--bg-surface);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
   margin-bottom: 16px;
 }
 
-.refill-tier {
-  flex: 1;
+.pricing-card {
+  border-radius: var(--radius-lg);
   padding: 44px 40px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.refill-tier:first-child { background: var(--green); }
-.refill-tier:last-child  { background: var(--green-light); }
+.pricing-card-primary {
+  background: var(--green);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+}
 
-.refill-tier-label {
+.pricing-card-secondary {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.pricing-eyebrow {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.85);
+  margin-bottom: 14px;
 }
-.refill-tier:last-child .refill-tier-label { color: rgba(10,17,40,0.8); }
+.pricing-card-primary .pricing-eyebrow { color: rgba(255,255,255,0.75); }
+.pricing-card-secondary .pricing-eyebrow { color: var(--accent-text); }
 
-.refill-tier-price {
+.pricing-price {
   font-family: var(--font-heading);
   font-size: 3rem;
   font-weight: 900;
-  color: var(--white);
   line-height: 1;
+  margin-bottom: 6px;
 }
-.refill-tier:last-child .refill-tier-price { color: var(--brown); }
+.pricing-card-primary .pricing-price { color: var(--white); }
+.pricing-card-secondary .pricing-price { color: var(--text-primary); }
 
-.refill-tier p {
-  color: rgba(255,255,255,0.85);
-  font-size: 0.95rem;
-  line-height: 1.7;
+.pricing-label {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.pricing-card-primary .pricing-label { color: rgba(255,255,255,0.9); }
+.pricing-card-secondary .pricing-label { color: var(--text-secondary); }
+
+.pricing-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
   flex: 1;
 }
-.refill-tier:last-child p { color: rgba(10,17,40,0.82); }
+.pricing-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.pricing-features li i { margin-top: 4px; font-size: 0.75rem; flex-shrink: 0; }
+.pricing-card-primary .pricing-features li { color: rgba(255,255,255,0.85); }
+.pricing-card-primary .pricing-features li i { color: var(--green-light); }
+.pricing-card-secondary .pricing-features li { color: var(--text-secondary); }
+.pricing-card-secondary .pricing-features li i { color: var(--accent-text); }
 
-/* Left tier — always-visible white button on dark teal */
-.refill-tier:first-child .btn-primary {
+.pricing-card-primary .btn-primary {
   background: var(--white);
   color: var(--green);
   box-shadow: 0 4px 16px rgba(255,255,255,0.2);
 }
-.refill-tier:first-child .btn-primary:hover {
+.pricing-card-primary .btn-primary:hover {
   background: var(--cream);
   color: var(--green);
   transform: translateY(-2px);
 }
 
-/* Right tier — dark button on green-light tier */
-.refill-tier:last-child .btn-ghost {
-  background: var(--brown);
-  color: var(--white);
-  border-color: var(--brown);
+.pricing-card-secondary .btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
-.refill-tier:last-child .btn-ghost:hover {
-  background: var(--cream);
-  color: var(--brown);
-  border-color: var(--cream);
+.pricing-card-secondary .btn-ghost:hover {
+  background: var(--accent-text);
+  color: var(--white);
+  border-color: var(--accent-text);
 }
 
-.refill-divider {
-  background: var(--cream);
-  border-left: 1px solid rgba(65,101,103,0.15);
-  border-right: 1px solid rgba(65,101,103,0.15);
-  align-self: stretch;
+.pricing-connector {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 84px;
-  padding: 0;
-  cursor: pointer;
-  border: none;
-  transition: background 0.3s ease;
+  align-self: center;
   position: relative;
+  z-index: 2;
 }
-.refill-divider:hover { background: var(--green-pale); }
-
-.plus-icon {
+.pricing-connector-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--green);
-  color: var(--white);
-  font-size: 1.7rem;
+  background: var(--bg-base);
+  border: 1.5px solid var(--border-subtle);
+  color: var(--accent-text);
+  font-size: 1.4rem;
   font-weight: 700;
-  line-height: 1;
-  user-select: none;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s, box-shadow 0.25s;
-  box-shadow: 0 4px 16px rgba(65,101,103,0.4);
-}
-.refill-divider:hover .plus-icon {
-  transform: rotate(135deg) scale(1.18);
-  background: var(--brown);
-  box-shadow: 0 6px 22px rgba(10,17,40,0.4);
-}
-.refill-divider:focus-visible {
-  outline: 3px solid var(--green-light);
-  outline-offset: 3px;
+  box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 700px) {
-  .refill-model { flex-direction: column; }
-  .refill-divider { min-width: unset; width: 100%; min-height: 72px; }
+@media (max-width: 760px) {
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
+  .pricing-connector { margin: -4px 0; }
 }
 
 /* Store buttons */
@@ -912,9 +919,16 @@ body {
 
 .editions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin-top: 48px;
+}
+
+@media (max-width: 860px) {
+  .editions-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .editions-grid { grid-template-columns: 1fr; }
 }
 
 .edition-card {
@@ -931,11 +945,9 @@ body {
 }
 
 .edition-christmas,
-.edition-valentine,
 .edition-thanksgiving,
 .edition-easter,
 .edition-reunions,
-.edition-memorial,
 .edition-classroom,
 .edition-workplace {
   background: var(--green);
