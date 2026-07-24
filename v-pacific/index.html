@@ -7,7 +7,7 @@
   <meta name="description" content="Game Changer puts down the phone and picks up the heart. Families draw names and share kind notes aloud — bringing back real human connection at Christmas, Valentine's Day, Easter, and beyond." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script>
@@ -27,14 +27,9 @@
         <svg width="38" height="38" viewBox="0 0 44 44" fill="none" aria-hidden="true">
           <rect width="44" height="44" rx="11" fill="#416567"/>
           <!-- Envelope body -->
-          <rect x="7" y="13" width="30" height="21" rx="2.5" fill="white"/>
-          <!-- Sealed flap fold -->
-          <path d="M7 13 L22 24 L37 13" stroke="#416567" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
-          <!-- Bottom corner folds -->
-          <path d="M7 34 L18 24" stroke="rgba(65,101,103,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M37 34 L26 24" stroke="rgba(65,101,103,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-          <!-- GC lettermark -->
-          <text x="22" y="33" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="8.5" font-weight="700" fill="#416567" letter-spacing="0.5">GC</text>
+          <rect x="8" y="14" width="28" height="18" rx="3" fill="white"/>
+          <!-- Heart seal -->
+          <path d="M22,27.5 C22,27.5 16.3,23.3 16.3,19.3 C16.3,17.2 17.9,15.5 19.9,15.5 C20.9,15.5 21.8,16 22,17 C22.2,16 23.1,15.5 24.1,15.5 C26.1,15.5 27.7,17.2 27.7,19.3 C27.7,23.3 22,27.5 22,27.5 Z" fill="#416567"/>
         </svg>
       </a>
       <div class="nav-right">
@@ -44,10 +39,10 @@
           <li><a href="#why">Why It Works</a></li>
           <li><a href="#contact" class="nav-cta">Get the Game</a></li>
         </ul>
-        <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode" aria-pressed="false">
-          <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
-          <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
-        </button>
+        <div class="theme-toggle" id="themeToggle" role="group" aria-label="Color theme">
+          <button type="button" class="theme-toggle-option" data-theme-option="light" aria-pressed="true">Light</button>
+          <button type="button" class="theme-toggle-option" data-theme-option="dark" aria-pressed="false">Dark</button>
+        </div>
         <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
@@ -546,14 +541,9 @@
           <svg width="30" height="30" viewBox="0 0 44 44" fill="none" aria-hidden="true">
             <rect width="44" height="44" rx="11" fill="#0A1128"/>
             <!-- Envelope body -->
-            <rect x="7" y="13" width="30" height="21" rx="2.5" fill="#75A6A9"/>
-            <!-- Sealed flap fold -->
-            <path d="M7 13 L22 24 L37 13" stroke="#0A1128" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
-            <!-- Bottom corner folds -->
-            <path d="M7 34 L18 24" stroke="rgba(10,17,40,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M37 34 L26 24" stroke="rgba(10,17,40,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- GC lettermark -->
-            <text x="22" y="33" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="8.5" font-weight="700" fill="#0A1128" letter-spacing="0.5">GC</text>
+            <rect x="8" y="14" width="28" height="18" rx="3" fill="#75A6A9"/>
+            <!-- Heart seal -->
+            <path d="M22,27.5 C22,27.5 16.3,23.3 16.3,19.3 C16.3,17.2 17.9,15.5 19.9,15.5 C20.9,15.5 21.8,16 22,17 C22.2,16 23.1,15.5 24.1,15.5 C26.1,15.5 27.7,17.2 27.7,19.3 C27.7,23.3 22,27.5 22,27.5 Z" fill="#0A1128"/>
           </svg>
           <div class="footer-bottom-legal">
             <p>© 2026 Game Changer</p>
