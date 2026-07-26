@@ -39,7 +39,7 @@
   --nav-border:      rgba(10,17,40,0.08);
   --accent-text:     var(--orange);
   --accent-contrast: var(--white);
-  --card-border:     transparent;
+  --card-border:     var(--border-subtle);
 }
 
 [data-theme="dark"] {
@@ -759,6 +759,7 @@ body {
 
 .pricing-card-primary {
   background: var(--green);
+  border: 1px solid rgba(255,255,255,0.12);
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 1;
@@ -937,6 +938,7 @@ body {
   position: relative;
   overflow: hidden;
   box-shadow: none;
+  border: 1px solid rgba(255,255,255,0.12);
   transition: transform 0.2s;
 }
 .edition-card:hover {
@@ -1066,10 +1068,8 @@ body {
 .contact-item a {
   text-decoration: none;
   color: var(--text-primary);
-  font-weight: 500;
-  transition: color 0.2s;
 }
-.contact-item a:hover { color: var(--accent-text); }
+.contact-item a:hover { text-decoration: underline; }
 
 .founder-name {
   font-family: var(--font-heading);
@@ -1082,6 +1082,7 @@ body {
 /* Form */
 .contact-form {
   background: var(--green);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-lg);
   padding: 40px 36px;
   box-shadow: var(--shadow-md);
