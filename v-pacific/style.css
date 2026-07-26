@@ -221,39 +221,48 @@ body {
 .theme-toggle {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   flex-shrink: 0;
-  padding: 3px;
-  gap: 2px;
+}
+
+.theme-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
   border-radius: 100px;
   border: 1.5px solid var(--border-subtle);
   background: var(--bg-surface-alt);
-}
-
-.theme-toggle-option {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border: none;
-  border-radius: 100px;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
-
-.theme-toggle-option[aria-pressed="true"] {
+.theme-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   background: var(--bg-surface);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(10,17,40,0.3);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+.theme-switch.is-dark {
+  background: var(--accent-text);
+  border-color: var(--accent-text);
+}
+.theme-switch.is-dark .theme-switch-knob {
+  transform: translateX(20px);
+  background: var(--white);
 }
 
-.theme-toggle-option:not([aria-pressed="true"]):hover {
+.theme-toggle-label {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .nav-hamburger {
@@ -765,24 +774,25 @@ body {
 .pricing-card-primary {
   background: var(--green);
   border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: var(--shadow-lg);
+  box-shadow: none;
   position: relative;
   z-index: 1;
 }
 .pricing-card-primary:hover {
   background: var(--orange-light);
   border-color: rgba(255,255,255,0.25);
+  box-shadow: none;
 }
 
 .pricing-card-secondary {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 .pricing-card-secondary:hover {
   background: var(--bg-surface-alt);
   border-color: var(--text-muted);
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 .pricing-eyebrow {
@@ -877,7 +887,7 @@ body {
   color: var(--accent-text);
   font-size: 1.4rem;
   font-weight: 700;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 @media (max-width: 760px) {

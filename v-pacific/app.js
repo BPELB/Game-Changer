@@ -4,7 +4,7 @@
 
 // --- Light / dark theme toggle ---
 const themeToggle = document.getElementById('themeToggle');
-const themeOptions = themeToggle.querySelectorAll('.theme-toggle-option');
+const themeToggleLabel = document.getElementById('themeToggleLabel');
 const root = document.documentElement;
 
 function currentTheme() {
@@ -17,19 +17,17 @@ function setTheme(theme) {
   } else {
     root.removeAttribute('data-theme');
   }
-  themeOptions.forEach(btn => {
-    btn.setAttribute('aria-pressed', btn.dataset.themeOption === theme);
-  });
+  themeToggle.classList.toggle('is-dark', theme === 'dark');
+  themeToggle.setAttribute('aria-checked', theme === 'dark');
+  themeToggleLabel.textContent = theme === 'dark' ? 'Dark Mode' : 'Light Mode';
 }
 
 setTheme(currentTheme());
 
-themeOptions.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const next = btn.dataset.themeOption;
-    setTheme(next);
-    localStorage.setItem('gc-theme', next);
-  });
+themeToggle.addEventListener('click', () => {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  localStorage.setItem('gc-theme', next);
 });
 
 // --- Sticky nav shadow on scroll ---
