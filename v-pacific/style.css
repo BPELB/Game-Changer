@@ -484,7 +484,8 @@ body {
 }
 .problem-card:hover {
   transform: translateY(-4px);
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.24);
 }
 
 .problem-icon { font-size: 2rem; margin-bottom: 20px; color: var(--green-light); }
@@ -659,11 +660,13 @@ body {
   border-radius: var(--radius-lg);
   padding: 36px 28px;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
 }
 .why-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-md);
+  background: var(--bg-surface-alt);
+  border-color: var(--text-muted);
 }
 
 .why-icon { font-size: 1.8rem; margin-bottom: 20px; color: var(--accent-text); }
@@ -755,7 +758,9 @@ body {
   padding: 44px 40px;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
+.pricing-card:hover { transform: translateY(-4px); }
 
 .pricing-card-primary {
   background: var(--green);
@@ -764,11 +769,20 @@ body {
   position: relative;
   z-index: 1;
 }
+.pricing-card-primary:hover {
+  background: var(--orange-light);
+  border-color: rgba(255,255,255,0.25);
+}
 
 .pricing-card-secondary {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-sm);
+}
+.pricing-card-secondary:hover {
+  background: var(--bg-surface-alt);
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-md);
 }
 
 .pricing-eyebrow {
@@ -939,11 +953,13 @@ body {
   overflow: hidden;
   box-shadow: none;
   border: 1px solid rgba(255,255,255,0.12);
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
 }
 .edition-card:hover {
   transform: translateY(-6px);
   box-shadow: none;
+  background: var(--orange-light);
+  border-color: rgba(255,255,255,0.25);
 }
 
 .edition-christmas,
@@ -1020,6 +1036,12 @@ body {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: var(--radius);
   padding: 28px 24px;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+.reason:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.24);
 }
 
 .reason-icon { font-size: 1.4rem; color: var(--green-light); }
