@@ -103,7 +103,7 @@ body {
 .section-title em {
   font-family: var(--font-heading);
   font-style: italic;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--accent-text);
 }
 
@@ -360,7 +360,7 @@ body {
 .hero-headline em {
   font-family: var(--font-heading);
   font-style: italic;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--accent-text);
 }
 
