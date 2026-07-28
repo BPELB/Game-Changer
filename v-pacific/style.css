@@ -5,7 +5,7 @@
 :root {
   --cream:       #dad7cd;
   --cream-dark:  #c8c4bb;
-  --secondary-gradient: linear-gradient(180deg, #f5f1e8 0%, #dad7cd 100%);
+  --secondary-gradient: linear-gradient(180deg, #fbf9f5 0%, #f5f1e8 100%);
   --orange:      #416567;
   --orange-light:#5a8285;
   --orange-pale: #d0e4e6;
@@ -30,12 +30,12 @@
      edition cards) stay put in both modes by design. */
   --bg-base:        var(--secondary-gradient);
   --bg-surface:      var(--white);
-  --bg-surface-alt:  var(--cream-dark);
+  --bg-surface-alt:  #f7f2e9;
   --text-primary:    var(--brown);
   --text-secondary:  var(--brown-mid);
   --text-muted:      var(--warm-gray);
   --border-subtle:   var(--cream-dark);
-  --nav-bg:          rgba(218,215,205,0.92);
+  --nav-bg:          rgba(247,242,233,0.92);
   --nav-border:      rgba(10,17,40,0.08);
   --accent-text:     var(--orange);
   --accent-contrast: var(--white);
@@ -496,6 +496,10 @@ body {
   background: rgba(255,255,255,0.14);
   border-color: rgba(255,255,255,0.24);
 }
+[data-theme="dark"] .problem-card:hover {
+  background: var(--brown);
+  border-color: var(--border-subtle);
+}
 
 .problem-icon { font-size: 2rem; margin-bottom: 20px; color: var(--green-light); }
 
@@ -783,6 +787,10 @@ body {
   border-color: rgba(255,255,255,0.25);
   box-shadow: none;
 }
+[data-theme="dark"] .pricing-card-primary:hover {
+  background: var(--bg-base);
+  border-color: var(--border-subtle);
+}
 
 .pricing-card-secondary {
   background: var(--bg-surface);
@@ -971,6 +979,10 @@ body {
   background: var(--orange-light);
   border-color: rgba(255,255,255,0.25);
 }
+[data-theme="dark"] .edition-card:hover {
+  background: var(--bg-base);
+  border-color: var(--border-subtle);
+}
 
 .edition-christmas,
 .edition-thanksgiving,
@@ -1050,6 +1062,10 @@ body {
   transform: translateY(-4px);
   background: rgba(255,255,255,0.14);
   border-color: rgba(255,255,255,0.24);
+}
+[data-theme="dark"] .reason:hover {
+  background: var(--brown);
+  border-color: var(--border-subtle);
 }
 
 .reason-icon { font-size: 1.4rem; color: var(--green-light); }
