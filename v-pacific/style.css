@@ -979,8 +979,6 @@ body {
 .edition-classroom,
 .edition-workplace {
   background: var(--green);
-  border: none;
-  border-top: 3px solid rgba(255,255,255,0.15);
 }
 
 .edition-tag-live {
