@@ -9,6 +9,8 @@
   --orange:      #416567;
   --orange-light:#5a8285;
   --orange-pale: #d0e4e6;
+  --accent-warm: #D9622B;
+  --accent-warm-light: #E8834F;
   --green:       #416567;
   --green-light: #75A6A9;
   --green-pale:  #e0eef0;
@@ -96,7 +98,7 @@ body {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   line-height: 1.2;
-  color: var(--text-primary);
+  color: var(--accent-warm);
   margin-bottom: 24px;
 }
 
@@ -363,7 +365,7 @@ body {
   font-size: clamp(2.8rem, 6vw, 5rem);
   font-weight: 700;
   line-height: 1.1;
-  color: var(--text-primary);
+  color: var(--accent-warm);
   margin-bottom: 28px;
 }
 .hero-headline em {
