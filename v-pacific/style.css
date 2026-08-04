@@ -98,7 +98,7 @@ body {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   line-height: 1.2;
-  color: var(--accent-warm);
+  color: var(--text-primary);
   margin-bottom: 24px;
 }
 
@@ -365,7 +365,7 @@ body {
   font-size: clamp(2.8rem, 6vw, 5rem);
   font-weight: 700;
   line-height: 1.1;
-  color: var(--accent-warm);
+  color: var(--text-primary);
   margin-bottom: 28px;
 }
 .hero-headline em {
